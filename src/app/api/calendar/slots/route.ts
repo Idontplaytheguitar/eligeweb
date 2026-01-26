@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         where: { date, status: { not: "cancelled" } },
         select: { time: true },
       });
-      bookedTimes = existingMeetings.map((m) => m.time);
+      bookedTimes = existingMeetings.map((m: { time: string }) => m.time);
     } catch {
       // Table might not exist yet
     }
