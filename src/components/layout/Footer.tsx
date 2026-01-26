@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Instagram, Facebook, Mail, Phone, MapPin, Clock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { siteContent } from "@/content/site";
+import type { NavItem, ServiceItem } from "@/types";
 
 export function Footer() {
   return (
@@ -45,7 +46,7 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Navegación</h3>
             <nav className="flex flex-col gap-2">
-              {siteContent.navigation.map((item) => (
+              {siteContent.navigation.map((item: NavItem) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -66,7 +67,7 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Servicios</h3>
             <nav className="flex flex-col gap-2">
-              {siteContent.services.slice(0, 6).map((service) => (
+              {siteContent.services.slice(0, 6).map((service: ServiceItem) => (
                 <Link
                   key={service.id}
                   href={`/servicios#${service.id}`}

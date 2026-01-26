@@ -240,7 +240,7 @@ export function BookingSection() {
                 </div>
 
                 <div className="grid grid-cols-7 gap-1 mb-2">
-                  {DAYS_SHORT.map((day) => (
+                  {DAYS_SHORT.map((day: string) => (
                     <div key={day} className="text-center text-xs text-muted-foreground py-2">
                       {day}
                     </div>
@@ -248,7 +248,7 @@ export function BookingSection() {
                 </div>
 
                 <div className="grid grid-cols-7 gap-1">
-                  {days.map((day, index) => {
+                  {days.map((day: Date | null, index: number) => {
                     if (!day) {
                       return <div key={`empty-${index}`} className="aspect-square" />;
                     }
@@ -288,7 +288,7 @@ export function BookingSection() {
                       </div>
                     ) : availableSlots.length > 0 ? (
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                        {availableSlots.map((time) => (
+                        {availableSlots.map((time: string) => (
                           <button
                             key={time}
                             onClick={() => setSelectedTime(time)}

@@ -9,6 +9,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { siteContent } from "@/content/site";
+import type { WhyChooseUsItem } from "@/types";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Award,
@@ -32,7 +33,7 @@ export function WhyChooseUs() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {siteContent.whyChooseUs.map((item, index) => {
+          {siteContent.whyChooseUs.map((item: WhyChooseUsItem, index: number) => {
             const Icon = iconMap[item.icon] || Award;
             return (
               <motion.div

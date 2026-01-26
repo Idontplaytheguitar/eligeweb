@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -109,10 +110,10 @@ export default function AdminTalleresPage() {
         setPriceInput("");
       } else {
         const data = await res.json();
-        alert(data.error || "Error al guardar");
+        toast.error(data.error || "Error al guardar");
       }
     } catch {
-      alert("Error de conexión");
+      toast.error("Error de conexión");
     } finally {
       setIsSaving(false);
     }
@@ -127,7 +128,7 @@ export default function AdminTalleresPage() {
         await fetchWorkshops();
       }
     } catch {
-      alert("Error al eliminar");
+      toast.error("Error al eliminar el taller");
     }
   };
 
@@ -140,7 +141,7 @@ export default function AdminTalleresPage() {
       });
       await fetchWorkshops();
     } catch {
-      alert("Error al actualizar");
+      toast.error("Error al actualizar el estado");
     }
   };
 
@@ -346,7 +347,7 @@ export default function AdminTalleresPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {workshops.map((workshop) => (
+            {workshops.map((workshop: Workshop) => (
               <Card key={workshop.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-4">

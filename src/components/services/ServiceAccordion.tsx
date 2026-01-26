@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { siteContent } from "@/content/site";
+import type { ServiceItem } from "@/types";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Briefcase,
@@ -24,7 +25,7 @@ export function ServiceAccordion() {
   return (
     <div className="max-w-4xl mx-auto">
       <Accordion type="single" collapsible className="w-full space-y-4">
-        {siteContent.services.map((service, index) => {
+        {siteContent.services.map((service: ServiceItem, index: number) => {
           const Icon = iconMap[service.icon] || Scale;
           return (
             <motion.div
@@ -65,7 +66,7 @@ export function ServiceAccordion() {
                         ¿Qué incluye?
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {service.includes.map((item, i) => (
+                        {service.includes.map((item: string, i: number) => (
                           <div key={i} className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-primary shrink-0" />
                             <span className="text-sm text-muted-foreground">

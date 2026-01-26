@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { contactFormSchema, type ContactFormData } from "@/lib/schemas";
+import type { ServiceItem } from "@/types";
 import { siteContent } from "@/content/site";
 
 export function ContactForm() {
@@ -118,7 +119,7 @@ export function ContactForm() {
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="">Seleccionar área (opcional)</option>
-              {siteContent.services.map((service) => (
+              {siteContent.services.map((service: ServiceItem) => (
                 <option key={service.id} value={service.title}>
                   {service.title}
                 </option>

@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { siteContent } from "@/content/site";
+import type { FAQItem } from "@/types";
 
 export function FAQ() {
   return (
@@ -30,7 +31,7 @@ export function FAQ() {
           transition={{ duration: 0.4 }}
         >
           <Accordion type="single" collapsible className="w-full">
-            {siteContent.faqs.map((faq, index) => (
+            {siteContent.faqs.map((faq: FAQItem, index: number) => (
               <AccordionItem key={index} value={`item-${index}`}>
                 <AccordionTrigger className="text-left text-base md:text-lg font-medium hover:text-primary">
                   {faq.question}

@@ -7,6 +7,7 @@ import { Menu, MessageCircle, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { siteContent } from "@/content/site";
+import type { NavItem } from "@/types";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,7 +45,7 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          {siteContent.navigation.map((item) => (
+          {siteContent.navigation.map((item: NavItem) => (
             <Link
               key={item.href}
               href={item.href}
@@ -95,7 +96,7 @@ export function Navbar() {
                 />
               </Link>
               <nav className="flex flex-col gap-4">
-                {siteContent.navigation.map((item) => (
+                {siteContent.navigation.map((item: NavItem) => (
                   <SheetClose asChild key={item.href}>
                     <Link
                       href={item.href}

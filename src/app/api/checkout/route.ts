@@ -1,4 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+
+// DISABLED: Mercadopago checkout not ready for production yet
+export async function POST(request: NextRequest) {
+  return NextResponse.json(
+    { error: "Los talleres no están disponibles en este momento. Próximamente." },
+    { status: 503 }
+  );
+}
+
+/* DISABLED CODE - Keep for future use
 import { prisma } from "@/lib/prisma";
 import { createPreference } from "@/lib/mercadopago";
 
@@ -45,3 +55,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+*/

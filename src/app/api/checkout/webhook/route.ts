@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+
+// DISABLED: Mercadopago webhook not ready for production yet
+export async function POST(request: NextRequest) {
+  return NextResponse.json(
+    { error: "Webhook not available" },
+    { status: 503 }
+  );
+}
+
+/* DISABLED CODE - Keep for future use
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getPayment } from "@/lib/mercadopago";
 import { sendPurchaseEmail } from "@/lib/email";
 
-export async function POST(request: NextRequest) {
+export async function POST_DISABLED(request: NextRequest) {
   try {
     const body = await request.json();
 
@@ -81,3 +91,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+*/

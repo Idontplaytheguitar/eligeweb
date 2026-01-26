@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
+import type { TestimonialItem } from "@/types";
 
 export function Testimonials() {
   return (
@@ -19,7 +20,7 @@ export function Testimonials() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {siteContent.testimonials.map((testimonial, index) => (
+          {siteContent.testimonials.map((testimonial: TestimonialItem, index: number) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}

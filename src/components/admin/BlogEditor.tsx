@@ -190,7 +190,7 @@ export function BlogEditor({ post, onSave, onCancel, isSaving }: BlogEditorProps
                   </Button>
                   {showAIMenu && (
                     <div className="absolute right-0 mt-1 w-56 bg-background border rounded-lg shadow-lg z-20">
-                      {aiActions.map((action) => (
+                      {aiActions.map((action: { id: AIAction; label: string; description: string }) => (
                         <button
                           key={action.id}
                           onClick={() => handleAIImprove(action.id)}

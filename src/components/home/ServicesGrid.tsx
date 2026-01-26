@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
+import type { ServiceItem } from "@/types";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Briefcase,
@@ -37,8 +38,8 @@ export function ServicesGrid() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {siteContent.services
-            .filter((service) => service.id !== "transito")
-            .map((service, index) => {
+            .filter((service: ServiceItem) => service.id !== "transito")
+            .map((service: ServiceItem, index: number) => {
             const Icon = iconMap[service.icon] || Scale;
             return (
               <motion.div

@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { ScheduleEditor } from "@/components/admin/ScheduleEditor";
 import {
   type RecurringSchedule,
@@ -120,12 +121,12 @@ export default function AdminAgendaPage() {
       });
 
       if (res.ok) {
-        alert("Configuración guardada");
+        toast.success("Configuración guardada correctamente");
       } else {
-        alert("Error al guardar");
+        toast.error("Error al guardar la configuración");
       }
     } catch {
-      alert("Error de conexión");
+      toast.error("Error de conexión");
     } finally {
       setIsSaving(false);
     }
@@ -145,7 +146,7 @@ export default function AdminAgendaPage() {
         await fetchData();
       }
     } catch {
-      alert("Error al cancelar");
+      toast.error("Error al cancelar la reunión");
     }
   };
 
@@ -163,7 +164,7 @@ export default function AdminAgendaPage() {
         await fetchData();
       }
     } catch {
-      alert("Error al eliminar");
+      toast.error("Error al eliminar la reunión");
     }
   };
 
@@ -235,7 +236,7 @@ export default function AdminAgendaPage() {
               <div>
                 <h2 className="text-lg font-semibold mb-4">Próximas reuniones</h2>
                 <div className="space-y-3">
-                  {upcomingMeetings.map((meeting) => (
+                  {upcomingMeetings.map((meeting: Meeting) => (
                     <Card key={meeting.id}>
                       <CardContent className="py-4">
                         <div className="flex items-start justify-between gap-4">
@@ -313,7 +314,7 @@ export default function AdminAgendaPage() {
                   Reuniones pasadas/canceladas
                 </h2>
                 <div className="space-y-2">
-                  {pastMeetings.slice(0, 10).map((meeting) => (
+                  {pastMeetings.slice(0, 10).map((meeting: Meeting) => (
                     <Card key={meeting.id} className="opacity-60">
                       <CardContent className="py-3">
                         <div className="flex items-center justify-between">

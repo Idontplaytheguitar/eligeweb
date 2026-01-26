@@ -7,6 +7,7 @@ import { Loader2, ArrowLeft, Trash2, Mail, Phone, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 interface ContactMessage {
   id: string;
@@ -69,7 +70,7 @@ export default function AdminMensajesPage() {
         await fetchMessages();
       }
     } catch {
-      alert("Error al eliminar");
+      toast.error("Error al eliminar el mensaje");
     }
   };
 
@@ -109,7 +110,7 @@ export default function AdminMensajesPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {messages.map((msg) => (
+            {messages.map((msg: ContactMessage) => (
               <Card key={msg.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-4">

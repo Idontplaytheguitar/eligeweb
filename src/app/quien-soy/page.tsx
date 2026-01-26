@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Image from "next/image";
 import { Ear, MessageSquareText, Target, ShieldCheck, GraduationCap, Briefcase, Award } from "lucide-react";
 import { CTASection } from "@/components/home/CTASection";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,14 +55,13 @@ export default function QuienSoyPage() {
             
             <div className="order-1 lg:order-2">
               <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-muted">
-                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                  <div className="text-center p-8">
-                    <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-4xl font-bold text-primary">AG</span>
-                    </div>
-                    <p className="text-sm">Foto próximamente</p>
-                  </div>
-                </div>
+                <Image
+                  src="/EstudioFrentePerfil.jpeg"
+                  alt="Estudio Jurídico Elige"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
             </div>
           </div>

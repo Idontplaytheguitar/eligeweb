@@ -4,7 +4,9 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppFloatingButton } from "@/components/layout/WhatsAppFloatingButton";
+import { Toaster } from "sonner";
 import { siteContent } from "@/content/site";
+import type { ServiceItem } from "@/types";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -95,7 +97,7 @@ export default function RootLayout({
                 "@type": "Country",
                 name: "Argentina",
               },
-              serviceType: siteContent.services.map((s) => s.title),
+              serviceType: siteContent.services.map((s: ServiceItem) => s.title),
             }),
           }}
         />
@@ -114,6 +116,7 @@ export default function RootLayout({
         */}
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
+        <Toaster position="top-right" richColors />
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />

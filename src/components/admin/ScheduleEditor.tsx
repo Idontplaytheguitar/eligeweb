@@ -21,7 +21,7 @@ interface ScheduleEditorProps {
 const HOURS = Array.from({ length: 14 }, (_, i) => i + 7);
 
 function timeToSlotIndex(time: string): number {
-  const [h, m] = time.split(":").map(Number);
+  const [h, m] = time.split(":").map((val: string) => Number(val));
   return (h - 7) * 2 + (m >= 30 ? 1 : 0);
 }
 
@@ -132,7 +132,7 @@ export function ScheduleEditor({
   };
 
   const updateException = (date: string, updates: Partial<DateException>) => {
-    onUpdateExceptions(exceptions.map((e) => (e.date === date ? { ...e, ...updates } : e)));
+    onUpdateExceptions(exceptions.map((e: DateException) => (e.date === date ? { ...e, ...updates } : e)));
   };
 
   const removeException = (date: string) => {
@@ -176,8 +176,8 @@ export function ScheduleEditor({
           </div>
 
           <div className="space-y-2">
-            {DAYS_OF_WEEK.map((day) => {
-              const schedule = recurring.find((r) => r.dayOfWeek === day.id);
+            {DAYS_OF_WEEK.map((day: { id: number; name: string; short: string }) => {
+              const schedule = recurring.find((r: RecurringSchedule) => r.dayOfWeek === day.id);
               const hasSlots = schedule && schedule.slots.length > 0;
               const isExpanded = expandedDay === day.id;
 
@@ -197,7 +197,7 @@ export function ScheduleEditor({
                     <div className="flex items-center gap-2">
                       {hasSlots && (
                         <span className="text-sm text-muted-foreground">
-                          {schedule!.slots.map((s) => `${s.start}-${s.end}`).join(", ")}
+                          {schedule!.slots.map((s: TimeSlot) => `${s.start}-${s.end}`).join(", ")}
                         </span>
                       )}
                     </div>
@@ -225,7 +225,7 @@ export function ScheduleEditor({
                       </div>
 
                       <div className="grid grid-cols-7 gap-1">
-                        {HOURS.map((hour) => {
+                        {HOURS.map((hour: number) => {
                           const matrix = getScheduleMatrix(day.id);
                           const slotIndex = (hour - 7) * 2;
                           const isActive = matrix[slotIndex] || matrix[slotIndex + 1];
@@ -290,8 +290,8 @@ export function ScheduleEditor({
           ) : (
             <div className="space-y-2">
               {exceptions
-                .sort((a, b) => a.date.localeCompare(b.date))
-                .map((exception) => {
+                .sort((a: DateException, b: DateException) => a.date.localeCompare(b.date))
+                .map((exception: DateException) => {
                   const dateObj = new Date(exception.date + "T12:00:00");
 
                   return (

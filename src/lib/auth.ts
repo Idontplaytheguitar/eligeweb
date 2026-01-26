@@ -17,7 +17,11 @@ export async function getAdminPassword(): Promise<string> {
   } catch {
     // Table might not exist yet
   }
-  return process.env.ADMIN_PASSWORD || "admin123";
+  // Return env password or throw error if not set
+  if (!process.env.ADMIN_PASSWORD) {
+    throw new Error("ADMIN_PASSWORD environment variable is not set");
+  }
+  return process.env.ADMIN_PASSWORD;
 }
 
 export async function setAdminPassword(password: string): Promise<boolean> {

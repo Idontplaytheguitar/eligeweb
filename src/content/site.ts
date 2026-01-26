@@ -146,7 +146,7 @@ export const siteContent: {
     { name: "Quién Soy", href: "/quien-soy" },
     { name: "Agendar", href: "/agendar" },
     { name: "Blog", href: "/blog" },
-    { name: "Talleres", href: "/talleres" },
+    // { name: "Talleres", href: "/talleres" }, // DISABLED: Not ready for production yet
     { name: "Contacto", href: "/contacto" },
   ],
 

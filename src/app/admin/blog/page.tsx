@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BlogEditor } from "@/components/admin/BlogEditor";
+import { toast } from "sonner";
 
 interface BlogPost {
   id: string;
@@ -77,7 +78,7 @@ export default function AdminBlogPage() {
 
   const handleSave = async (post: Partial<BlogPost>) => {
     if (!post.title || !post.excerpt || !post.content) {
-      alert("Completá todos los campos requeridos");
+      toast.error("Completá todos los campos requeridos");
       return;
     }
 
@@ -96,10 +97,10 @@ export default function AdminBlogPage() {
         setCurrentPost(null);
       } else {
         const data = await res.json();
-        alert(data.error || "Error al guardar");
+        toast.error(data.error || "Error al guardar");
       }
     } catch {
-      alert("Error de conexión");
+      toast.error("Error de conexión");
     } finally {
       setIsSaving(false);
     }
@@ -114,7 +115,7 @@ export default function AdminBlogPage() {
         await fetchPosts();
       }
     } catch {
-      alert("Error al eliminar");
+      toast.error("Error al eliminar el artículo");
     }
   };
 
@@ -127,7 +128,7 @@ export default function AdminBlogPage() {
       });
       await fetchPosts();
     } catch {
-      alert("Error al actualizar");
+      toast.error("Error al actualizar el estado");
     }
   };
 
@@ -198,7 +199,7 @@ export default function AdminBlogPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {posts.map((post) => (
+            {posts.map((post: BlogPost) => (
               <Card key={post.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-4">

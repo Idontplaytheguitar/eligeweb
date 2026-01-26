@@ -112,7 +112,7 @@ export function MarkdownToolbar({ textareaRef, onInsert }: MarkdownToolbarProps)
 
   return (
     <div className="flex flex-wrap gap-1 p-2 bg-muted/50 border-b rounded-t-lg">
-      {actions.map((action) => (
+      {actions.map((action: MarkdownAction) => (
         <Button
           key={action.label}
           type="button"
