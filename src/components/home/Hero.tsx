@@ -9,6 +9,16 @@ import { siteContent } from "@/content/site";
 export function Hero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/30">
+      {/* Video background - mobile hidden, desktop subtle */}
+      <video 
+        autoPlay 
+        loop 
+        muted 
+        playsInline 
+        className="absolute inset-0 w-full h-full object-cover opacity-10 hidden md:block video-fade-loop"
+      >
+        <source src="/EstudioEntradaVideo.mp4" type="video/mp4" />
+      </video>
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#E3E7F020_1px,transparent_1px),linear-gradient(to_bottom,#E3E7F020_1px,transparent_1px)] bg-[size:4rem_4rem]" />
       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-muted/20 to-transparent" />
       

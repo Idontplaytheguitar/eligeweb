@@ -26,6 +26,7 @@ export interface ContactEmailParams {
   name: string;
   email: string;
   phone?: string;
+  whatsapp?: string;
   area?: string;
   message: string;
 }
@@ -37,7 +38,7 @@ export async function sendContactEmail(params: ContactEmailParams) {
     return;
   }
 
-  const { name, email, phone, area, message } = params;
+  const { name, email, phone, whatsapp, area, message } = params;
 
   try {
     await transporter.sendMail({
@@ -82,6 +83,12 @@ export async function sendContactEmail(params: ContactEmailParams) {
                 <div class="detail">
                   <div class="detail-label">Teléfono</div>
                   <div class="detail-value"><a href="tel:${phone}">${phone}</a></div>
+                </div>
+              ` : ""}
+              ${whatsapp ? `
+                <div class="detail">
+                  <div class="detail-label">WhatsApp</div>
+                  <div class="detail-value"><a href="https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}">${whatsapp}</a></div>
                 </div>
               ` : ""}
               ${area ? `

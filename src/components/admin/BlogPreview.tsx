@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import ReactMarkdown from "react-markdown";
 import { Calendar } from "lucide-react";
 
 interface BlogPreviewProps {
@@ -57,7 +56,7 @@ export function BlogPreview({
 
         <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground">
           {content ? (
-            <ReactMarkdown>{content}</ReactMarkdown>
+            <div dangerouslySetInnerHTML={{ __html: content }} />
           ) : (
             <p className="text-muted-foreground italic">
               El contenido del artículo aparecerá aquí...

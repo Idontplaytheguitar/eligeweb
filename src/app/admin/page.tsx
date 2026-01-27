@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, LogOut, FileText, GraduationCap, Mail, Key, Calendar } from "lucide-react";
+import { Loader2, LogOut, FileText, GraduationCap, Mail, Key, Calendar, Layout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -341,6 +341,20 @@ export default function AdminPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Link href="/admin/contenido">
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Layout className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>Manejo de contenido</CardTitle>
+                <CardDescription>
+                  Editar todo el contenido del sitio
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/admin/blog">
             <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
               <CardHeader>
@@ -374,9 +388,9 @@ export default function AdminPage() {
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <Mail className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle>Mensajes</CardTitle>
+                <CardTitle>Consultas</CardTitle>
                 <CardDescription>
-                  Ver consultas recibidas del formulario
+                  Ver y responder consultas recibidas
                 </CardDescription>
               </CardHeader>
             </Card>

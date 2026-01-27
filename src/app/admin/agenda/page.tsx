@@ -13,6 +13,9 @@ import {
   X,
   Trash2,
   ExternalLink,
+  Phone,
+  MapPin,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +38,7 @@ interface Meeting {
   time: string;
   endTime: string;
   type: string;
+  meetingType: string;
   meetLink: string | null;
   notes: string | null;
   status: string;
@@ -181,6 +185,36 @@ export default function AdminAgendaPage() {
     }
   };
 
+  const getMeetingTypeIcon = (meetingType: string) => {
+    switch (meetingType) {
+      case "google_meet":
+        return <Video className="w-4 h-4" />;
+      case "whatsapp":
+        return <Phone className="w-4 h-4" />;
+      case "presencial":
+        return <MapPin className="w-4 h-4" />;
+      case "acordar":
+        return <MessageSquare className="w-4 h-4" />;
+      default:
+        return <Video className="w-4 h-4" />;
+    }
+  };
+
+  const getMeetingTypeLabel = (meetingType: string) => {
+    switch (meetingType) {
+      case "google_meet":
+        return "Google Meet";
+      case "whatsapp":
+        return "WhatsApp Call";
+      case "presencial":
+        return "Presencial";
+      case "acordar":
+        return "A acordar";
+      default:
+        return "Google Meet";
+    }
+  };
+
   const upcomingMeetings = meetings.filter(
     (m) => m.status !== "cancelled" && new Date(`${m.date}T${m.time}`) >= new Date()
   );
@@ -241,9 +275,13 @@ export default function AdminAgendaPage() {
                       <CardContent className="py-4">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
                               <span className="font-semibold">{meeting.name}</span>
                               {getStatusBadge(meeting.status)}
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                {getMeetingTypeIcon(meeting.meetingType || meeting.type)}
+                                {getMeetingTypeLabel(meeting.meetingType || meeting.type)}
+                              </Badge>
                             </div>
                             <div className="text-sm text-muted-foreground space-y-1">
                               <p>
@@ -261,7 +299,7 @@ export default function AdminAgendaPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {meeting.meetLink && (
+                            {meeting.meetLink && (meeting.meetingType || meeting.type) === 'google_meet' && (
                               <Button variant="outline" size="sm" asChild>
                                 <a
                                   href={meeting.meetLink}
@@ -318,12 +356,15 @@ export default function AdminAgendaPage() {
                     <Card key={meeting.id} className="opacity-60">
                       <CardContent className="py-3">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-medium">{meeting.name}</span>
                             {getStatusBadge(meeting.status)}
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              {getMeetingTypeIcon(meeting.meetingType || meeting.type)}
+                              {getMeetingTypeLabel(meeting.meetingType || meeting.type)}
+                            </Badge>
                             <span className="text-sm text-muted-foreground">
-                              {new Date(meeting.date).toLocaleDateString("es-AR")} -{" "}
-                              {meeting.time}
+                              {new Date(meeting.date).toLocaleDateString("es-AR")} - {meeting.time}
                             </span>
                           </div>
                           <Button

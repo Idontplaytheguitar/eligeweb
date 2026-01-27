@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BlogEditor } from "@/components/admin/BlogEditor";
+import { BlogEditorWYSIWYG } from "@/components/admin/BlogEditorWYSIWYG";
 import { toast } from "sonner";
 
 interface BlogPost {
@@ -142,7 +142,7 @@ export default function AdminBlogPage() {
 
   if (isEditing && currentPost) {
     return (
-      <BlogEditor
+      <BlogEditorWYSIWYG
         post={currentPost}
         onSave={handleSave}
         onCancel={() => {

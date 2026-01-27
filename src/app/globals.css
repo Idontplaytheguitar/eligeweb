@@ -111,4 +111,14 @@
   .container-padding {
     @apply px-4 md:px-6 lg:px-8;
   }
+  
+  /* Video fade loop animation */
+  @keyframes videoFade {
+    0%, 100% { opacity: 0.10; }
+    50% { opacity: 0.08; }
+  }
+  
+  .video-fade-loop {
+    animation: videoFade 8s ease-in-out infinite;
+  }
 }

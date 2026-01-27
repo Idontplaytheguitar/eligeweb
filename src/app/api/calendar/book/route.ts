@@ -7,7 +7,7 @@ import { addMinutes, defaultBookingConfig } from "@/lib/booking";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, date, time, notes } = body;
+    const { name, email, phone, date, time, notes, meetingType = 'google_meet' } = body;
 
     if (!name || !email || !date || !time) {
       return NextResponse.json(
@@ -40,14 +40,16 @@ export async function POST(request: NextRequest) {
       date,
       time,
       endTime,
-      type: "google_meet",
+      type: "google_meet", // Legacy field
+      meetingType: meetingType,
       notes: notes || null,
       status: "pending",
       meetLink: null as string | null,
       calendarEventId: null as string | null,
     };
 
-    if (isGoogleCalendarConfigured()) {
+    // Solo crear evento de Google Calendar si el tipo es google_meet
+    if (meetingType === 'google_meet' && isGoogleCalendarConfigured()) {
       const startDateTime = `${date}T${time}:00-03:00`;
       const endDateTime = `${date}T${endTime}:00-03:00`;
 

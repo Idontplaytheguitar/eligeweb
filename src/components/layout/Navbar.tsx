@@ -31,15 +31,15 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background backdrop-blur supports-[backdrop-filter]:bg-background/95">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/brand/elige-logo-transparent.png"
+            src="/Logo.png"
             alt={siteContent.fullName}
-            width={120}
-            height={40}
-            className="h-10 w-auto"
+            width={140}
+            height={50}
+            className="h-12 w-auto"
             priority
           />
         </Link>
@@ -60,7 +60,7 @@ export function Navbar() {
           {isAdmin && (
             <Button variant="ghost" size="icon" asChild>
               <Link href="/admin" title="Admin">
-                <Settings className="h-5 w-5" />
+                <Settings className="h-6 w-6" />
               </Link>
             </Button>
           )}
@@ -88,11 +88,11 @@ export function Navbar() {
             <div className="flex flex-col gap-6 mt-6">
               <Link href="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
                 <Image
-                  src="/brand/elige-logo-transparent.png"
+                  src="/Logo.png"
                   alt={siteContent.fullName}
-                  width={120}
-                  height={40}
-                  className="h-10 w-auto"
+                  width={140}
+                  height={50}
+                  className="h-12 w-auto"
                 />
               </Link>
               <nav className="flex flex-col gap-4">
@@ -112,7 +112,7 @@ export function Navbar() {
                       href="/admin"
                       className="text-lg font-medium text-foreground transition-colors hover:text-primary flex items-center gap-2"
                     >
-                      <Settings className="h-5 w-5" />
+                      <Settings className="h-6 w-6" />
                       Admin
                     </Link>
                   </SheetClose>

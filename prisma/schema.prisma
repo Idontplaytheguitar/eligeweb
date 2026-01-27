@@ -32,7 +32,7 @@ model BlogPost {
   slug        String   @unique
   title       String
   excerpt     String
-  content     String
+  content     String   @db.Text
   coverImage  String?
   published   Boolean  @default(false)
   publishedAt DateTime?
@@ -73,6 +73,7 @@ model ContactMessage {
   name      String
   email     String
   phone     String?
+  whatsapp  String?
   area      String?
   message   String
   createdAt DateTime @default(now())
@@ -87,6 +88,7 @@ model Meeting {
   time            String
   endTime         String
   type            String   @default("google_meet")
+  meetingType     String   @default("google_meet")
   meetLink        String?
   notes           String?
   status          String   @default("pending")
@@ -100,4 +102,44 @@ model BookingConfig {
   recurring       Json
   exceptions      Json
   meetingDuration Int     @default(30)
+}
+
+model SiteContent {
+  id              String   @id @default("main")
+  // Hero
+  heroTitle       String   @db.Text
+  heroSubtitle    String   @db.Text
+  // Quién Soy
+  aboutName       String
+  aboutRole       String
+  aboutImage      String
+  aboutBio        String   @db.Text
+  aboutTimeline   String   @db.Text
+  // Servicios
+  services        String   @db.Text
+  // Testimonios
+  testimonials    String   @db.Text
+  // FAQs
+  faqs            String   @db.Text
+  // WhyChooseUs
+  whyChooseUs     String   @db.Text
+  // Process
+  process         String   @db.Text
+  // Footer
+  footerDesc      String   @db.Text
+  // Contact
+  contactWhatsapp String
+  contactEmail    String
+  contactAddress  String
+  contactCity     String
+  contactHours    String
+  // Social
+  socialInstagram String
+  socialFacebook  String
+  // CTA
+  ctaTitle        String
+  ctaSubtitle     String
+  ctaButton       String
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
 }

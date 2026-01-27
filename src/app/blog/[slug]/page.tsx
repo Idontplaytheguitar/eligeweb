@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import ReactMarkdown from "react-markdown";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
@@ -93,9 +92,10 @@ export default async function BlogPostPage({ params }: Props) {
             )}
           </header>
 
-          <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground">
-            <ReactMarkdown>{post.content}</ReactMarkdown>
-          </div>
+          <div 
+            className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-strong:text-foreground"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
         </div>
       </article>
 

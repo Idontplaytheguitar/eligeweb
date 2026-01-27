@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ArrowLeft, Trash2, Mail, Phone, Calendar } from "lucide-react";
+import { Loader2, ArrowLeft, Trash2, Mail, Phone, Calendar, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ interface ContactMessage {
   name: string;
   email: string;
   phone: string | null;
+  whatsapp: string | null;
   area: string | null;
   message: string;
   createdAt: string;
@@ -93,9 +94,9 @@ export default function AdminMensajesPage() {
                 Volver
               </Link>
             </Button>
-            <h1 className="text-xl font-bold">Mensajes de Contacto</h1>
+            <h1 className="text-xl font-bold">Consultas</h1>
           </div>
-          <Badge variant="secondary">{messages.length} mensajes</Badge>
+          <Badge variant="secondary">{messages.length} consultas</Badge>
         </div>
       </div>
 
@@ -104,7 +105,7 @@ export default function AdminMensajesPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground">
-                No hay mensajes todavía
+                No hay consultas todavía
               </p>
             </CardContent>
           </Card>
@@ -121,22 +122,22 @@ export default function AdminMensajesPage() {
                           <Badge variant="outline">{msg.area}</Badge>
                         )}
                       </div>
-                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-3">
-                        <a
-                          href={`mailto:${msg.email}`}
-                          className="flex items-center gap-1 hover:text-foreground"
-                        >
+                      <div className="flex flex-wrap gap-2 text-sm text-muted-foreground mb-3">
+                        <span className="flex items-center gap-1">
                           <Mail className="h-3 w-3" />
                           {msg.email}
-                        </a>
+                        </span>
                         {msg.phone && (
-                          <a
-                            href={`tel:${msg.phone}`}
-                            className="flex items-center gap-1 hover:text-foreground"
-                          >
+                          <span className="flex items-center gap-1">
                             <Phone className="h-3 w-3" />
                             {msg.phone}
-                          </a>
+                          </span>
+                        )}
+                        {msg.whatsapp && (
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="h-3 w-3" />
+                            {msg.whatsapp}
+                          </span>
                         )}
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
@@ -149,9 +150,39 @@ export default function AdminMensajesPage() {
                           })}
                         </span>
                       </div>
-                      <p className="text-foreground whitespace-pre-wrap">
+                      <p className="text-foreground whitespace-pre-wrap mb-4">
                         {msg.message}
                       </p>
+                      <div className="flex flex-wrap gap-2">
+                        {msg.email && (
+                          <Button asChild variant="outline" size="sm">
+                            <a href={`mailto:${msg.email}`} target="_blank" rel="noopener noreferrer">
+                              <Mail className="h-4 w-4 mr-2" />
+                              Email
+                            </a>
+                          </Button>
+                        )}
+                        {msg.whatsapp && (
+                          <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
+                            <a 
+                              href={`https://wa.me/${msg.whatsapp.replace(/[^0-9]/g, '')}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              WhatsApp
+                            </a>
+                          </Button>
+                        )}
+                        {msg.phone && !msg.whatsapp && (
+                          <Button asChild variant="outline" size="sm">
+                            <a href={`tel:${msg.phone}`}>
+                              <Phone className="h-4 w-4 mr-2" />
+                              Llamar
+                            </a>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     <Button
                       variant="ghost"

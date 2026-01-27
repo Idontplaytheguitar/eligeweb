@@ -10,6 +10,9 @@ import {
   ChevronRight,
   Loader2,
   Check,
+  Phone,
+  MapPin,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,11 +26,39 @@ import {
 
 const DAYS_SHORT = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
+const MEETING_TYPES = [
+  { 
+    id: 'google_meet', 
+    label: 'Google Meet', 
+    icon: Video, 
+    description: 'Videollamada online' 
+  },
+  { 
+    id: 'whatsapp', 
+    label: 'WhatsApp Call', 
+    icon: Phone, 
+    description: 'Llamada por WhatsApp' 
+  },
+  { 
+    id: 'presencial', 
+    label: 'Presencial', 
+    icon: MapPin, 
+    description: 'En el estudio' 
+  },
+  { 
+    id: 'acordar', 
+    label: 'A acordar', 
+    icon: MessageSquare, 
+    description: 'Lo coordinamos luego' 
+  }
+];
+
 export function BookingSection() {
   const [config, setConfig] = useState<BookingConfigData>(defaultBookingConfig);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [meetingType, setMeetingType] = useState<string>('google_meet');
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", notes: "" });
@@ -97,6 +128,7 @@ export function BookingSection() {
           ...formData,
           date: selectedDate,
           time: selectedTime,
+          meetingType: meetingType,
         }),
       });
 
@@ -149,11 +181,12 @@ export function BookingSection() {
           )}
           <Button
             onClick={() => {
-              setIsSuccess(false);
-              setSelectedDate(null);
-              setSelectedTime(null);
-              setFormData({ name: "", email: "", phone: "", notes: "" });
-              setMeetLink(null);
+            setIsSuccess(false);
+            setSelectedDate(null);
+            setSelectedTime(null);
+            setMeetingType('google_meet');
+            setFormData({ name: "", email: "", phone: "", notes: "" });
+            setMeetLink(null);
             }}
           >
             Agendar otra reunión
@@ -320,14 +353,34 @@ export function BookingSection() {
           >
             <Card>
               <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-6">Completá tus datos</h3>
-
-                <div className="mb-4 flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                  <Video className="w-5 h-5 text-primary" />
-                  <span className="text-primary font-medium text-sm">
-                    Videollamada por Google Meet
-                  </span>
+                <h3 className="text-lg font-semibold mb-4">Tipo de reunión</h3>
+                
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  {MEETING_TYPES.map((type) => {
+                    const Icon = type.icon;
+                    return (
+                      <button
+                        key={type.id}
+                        onClick={() => setMeetingType(type.id)}
+                        className={`p-4 rounded-lg border-2 transition-all text-left ${
+                          meetingType === type.id
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <Icon className={`w-5 h-5 mb-2 ${
+                          meetingType === type.id ? "text-primary" : "text-muted-foreground"
+                        }`} />
+                        <div className="font-medium text-sm">{type.label}</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {type.description}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
+
+                <h3 className="text-lg font-semibold mb-4">Completá tus datos</h3>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
