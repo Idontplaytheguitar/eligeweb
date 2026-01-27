@@ -88,7 +88,7 @@ export function BlogEditor({ post, onSave, onCancel, isSaving }: BlogEditorProps
 
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col">
-      <div className="border-b bg-background sticky top-0 z-10">
+      <div className="border-b bg-header sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={onCancel}>

@@ -69,14 +69,14 @@ model Purchase {
 }
 
 model ContactMessage {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String?
-  whatsapp  String?
-  area      String?
-  message   String
-  createdAt DateTime @default(now())
+  id             String   @id @default(cuid())
+  name           String
+  email          String
+  phone          String
+  preferWhatsApp Boolean  @default(false)
+  area           String?
+  message        String
+  createdAt      DateTime @default(now())
 }
 
 model Meeting {

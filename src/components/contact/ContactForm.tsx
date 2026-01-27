@@ -96,7 +96,7 @@ export function ContactForm() {
 
           <div className="space-y-2">
             <label htmlFor="phone" className="text-sm font-medium text-foreground">
-              Teléfono {!preferWhatsApp && "*"}
+              Teléfono
             </label>
             <Input
               id="phone"
@@ -109,12 +109,18 @@ export function ContactForm() {
             {errors.phone && (
               <p className="text-sm text-destructive">{errors.phone.message}</p>
             )}
+            {preferWhatsApp && (
+              <p className="text-xs text-muted-foreground">
+                Incluí el código de área con 9 (ej: +54 9 11 1234-5678 para CABA)
+              </p>
+            )}
           </div>
 
           <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
             <input
               type="checkbox"
               id="preferWhatsApp"
+              {...register("preferWhatsApp")}
               checked={preferWhatsApp}
               onChange={(e) => setPreferWhatsApp(e.target.checked)}
               className="rounded h-4 w-4"
@@ -123,36 +129,6 @@ export function ContactForm() {
               Preferís que te contactemos por WhatsApp
             </label>
           </div>
-
-          <AnimatePresence>
-            {preferWhatsApp && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-2 overflow-hidden"
-              >
-                <label htmlFor="whatsapp" className="text-sm font-medium text-foreground">
-                  WhatsApp *
-                </label>
-                <Input
-                  id="whatsapp"
-                  type="tel"
-                  placeholder="+54 9 11 1234-5678"
-                  {...register("whatsapp")}
-                  aria-invalid={!!errors.whatsapp}
-                  className={errors.whatsapp ? "border-destructive" : ""}
-                />
-                {errors.whatsapp && (
-                  <p className="text-sm text-destructive">{errors.whatsapp.message}</p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Incluí el código de área con 9 (ej: +54 9 11 para CABA)
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <div className="space-y-2">
             <label htmlFor="area" className="text-sm font-medium text-foreground">

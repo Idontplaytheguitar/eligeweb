@@ -15,14 +15,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, phone, whatsapp, area, message } = result.data;
+    const { name, email, phone, preferWhatsApp, area, message } = result.data;
 
     await prisma.contactMessage.create({
       data: {
         name,
         email,
-        phone: phone || null,
-        whatsapp: whatsapp || null,
+        phone,
+        preferWhatsApp: preferWhatsApp || false,
         area: area || null,
         message,
       },
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         phone,
-        whatsapp,
+        preferWhatsApp: preferWhatsApp || false,
         area,
         message,
       });

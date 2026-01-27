@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -68,6 +68,7 @@ export function BlogEditorWYSIWYG({ post, onSave, onCancel, isSaving }: BlogEdit
   const [imageUrl, setImageUrl] = useState("");
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: {
@@ -96,6 +97,18 @@ export function BlogEditorWYSIWYG({ post, onSave, onCancel, isSaving }: BlogEdit
       setCurrentPost({ ...currentPost, content: editor.getHTML() });
     },
   });
+
+  // Actualizar el contenido del editor cuando cambia el post
+  useEffect(() => {
+    if (editor && post.content !== editor.getHTML()) {
+      editor.commands.setContent(post.content || "");
+    }
+  }, [post.content, editor]);
+
+  // Actualizar el estado cuando cambia el post prop
+  useEffect(() => {
+    setCurrentPost(post);
+  }, [post]);
 
   const handleAIImprove = async (action: AIAction) => {
     if (!editor) return;
@@ -165,7 +178,7 @@ export function BlogEditorWYSIWYG({ post, onSave, onCancel, isSaving }: BlogEdit
 
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col">
-      <div className="border-b bg-background sticky top-0 z-10">
+      <div className="border-b bg-header sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={onCancel}>

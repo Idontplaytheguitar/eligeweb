@@ -200,7 +200,7 @@ export default function AdminContenidoPage() {
   if (!content) {
     return (
       <div className="min-h-screen bg-muted/30">
-        <div className="border-b bg-background">
+        <div className="border-b bg-header">
           <div className="container mx-auto px-4 py-4 flex items-center gap-4">
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin">
@@ -226,7 +226,7 @@ export default function AdminContenidoPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="border-b bg-background sticky top-0 z-10">
+      <div className="border-b bg-header sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" asChild>

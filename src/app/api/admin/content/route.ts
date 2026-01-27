@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 async function isAuthenticated() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("admin_token");
+  const token = cookieStore.get("elige_admin_session");
   if (!token) return false;
 
   try {

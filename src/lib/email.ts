@@ -25,8 +25,8 @@ function getTransporter() {
 export interface ContactEmailParams {
   name: string;
   email: string;
-  phone?: string;
-  whatsapp?: string;
+  phone: string;
+  preferWhatsApp?: boolean;
   area?: string;
   message: string;
 }
@@ -38,7 +38,7 @@ export async function sendContactEmail(params: ContactEmailParams) {
     return;
   }
 
-  const { name, email, phone, whatsapp, area, message } = params;
+  const { name, email, phone, preferWhatsApp, area, message } = params;
 
   try {
     await transporter.sendMail({
@@ -59,6 +59,7 @@ export async function sendContactEmail(params: ContactEmailParams) {
             .detail { margin-bottom: 16px; }
             .detail-label { color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
             .detail-value { color: #1e293b; font-weight: 500; margin-top: 4px; font-size: 16px; }
+            .whatsapp-badge { display: inline-block; background: #25D366; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: 600; }
             .message-box { background: #f1f5f9; border-radius: 8px; padding: 16px; margin-top: 20px; }
             .message-box h3 { margin: 0 0 12px 0; color: #1e3a5f; font-size: 14px; }
             .message-box p { margin: 0; color: #334155; line-height: 1.6; white-space: pre-wrap; }
@@ -79,18 +80,13 @@ export async function sendContactEmail(params: ContactEmailParams) {
                 <div class="detail-label">Email</div>
                 <div class="detail-value"><a href="mailto:${email}">${email}</a></div>
               </div>
-              ${phone ? `
-                <div class="detail">
-                  <div class="detail-label">Teléfono</div>
-                  <div class="detail-value"><a href="tel:${phone}">${phone}</a></div>
+              <div class="detail">
+                <div class="detail-label">Teléfono${preferWhatsApp ? " / WhatsApp" : ""}</div>
+                <div class="detail-value">
+                  <a href="${preferWhatsApp ? `https://wa.me/${phone.replace(/[^0-9]/g, '')}` : `tel:${phone}`}">${phone}</a>
+                  ${preferWhatsApp ? '<span class="whatsapp-badge">⚡ WhatsApp</span>' : ""}
                 </div>
-              ` : ""}
-              ${whatsapp ? `
-                <div class="detail">
-                  <div class="detail-label">WhatsApp</div>
-                  <div class="detail-value"><a href="https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}">${whatsapp}</a></div>
-                </div>
-              ` : ""}
+              </div>
               ${area ? `
                 <div class="detail">
                   <div class="detail-label">Área de consulta</div>

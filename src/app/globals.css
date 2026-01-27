@@ -1,10 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
+  --color-header-background: var(--header-background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -48,6 +50,7 @@
 :root {
   --radius: 0.625rem;
   --background: #FFFFFF;
+  --header-background: #f0f1f0;
   --foreground: #2A3554;
   --card: #FFFFFF;
   --card-foreground: #2A3554;
@@ -112,6 +115,10 @@
     @apply px-4 md:px-6 lg:px-8;
   }
   
+  .bg-header {
+    background-color: var(--header-background);
+  }
+  
   /* Video fade loop animation */
   @keyframes videoFade {
     0%, 100% { opacity: 0.10; }
@@ -120,5 +127,150 @@
   
   .video-fade-loop {
     animation: videoFade 8s ease-in-out infinite;
+  }
+}
+
+/* Blog content styles - Typography enhancements */
+@layer components {
+  .prose {
+    /* Headings */
+    & h1 {
+      @apply text-4xl font-bold text-foreground mt-8 mb-4 leading-tight;
+    }
+    
+    & h2 {
+      @apply text-3xl font-bold text-foreground mt-8 mb-4 leading-tight;
+    }
+    
+    & h3 {
+      @apply text-2xl font-semibold text-foreground mt-6 mb-3 leading-snug;
+    }
+    
+    & h4 {
+      @apply text-xl font-semibold text-foreground mt-6 mb-3 leading-snug;
+    }
+    
+    & h5 {
+      @apply text-lg font-semibold text-foreground mt-4 mb-2;
+    }
+    
+    & h6 {
+      @apply text-base font-semibold text-foreground mt-4 mb-2;
+    }
+    
+    /* First heading no top margin */
+    & > :first-child {
+      @apply mt-0;
+    }
+    
+    /* Paragraphs */
+    & p {
+      @apply text-muted-foreground leading-relaxed mb-4;
+    }
+    
+    /* Links */
+    & a {
+      @apply text-primary font-medium underline decoration-primary/30 hover:decoration-primary transition-colors;
+    }
+    
+    /* Strong/Bold */
+    & strong {
+      @apply font-bold text-foreground;
+    }
+    
+    /* Emphasis/Italic */
+    & em {
+      @apply italic;
+    }
+    
+    /* Lists */
+    & ul {
+      @apply list-disc list-outside ml-6 mb-4 space-y-2;
+    }
+    
+    & ol {
+      @apply list-decimal list-outside ml-6 mb-4 space-y-2;
+    }
+    
+    & li {
+      @apply text-muted-foreground leading-relaxed;
+      
+      & > ul,
+      & > ol {
+        @apply mt-2 mb-0;
+      }
+    }
+    
+    /* Blockquotes */
+    & blockquote {
+      @apply border-l-4 border-primary/30 pl-4 py-2 my-6 italic bg-muted/30 rounded-r;
+      
+      & p {
+        @apply text-foreground/90 mb-0;
+      }
+    }
+    
+    /* Code */
+    & code {
+      @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground before:content-[''] after:content-[''];
+    }
+    
+    & pre {
+      @apply bg-muted p-4 rounded-lg overflow-x-auto my-6;
+      
+      & code {
+        @apply bg-transparent p-0 text-sm;
+      }
+    }
+    
+    /* Images */
+    & img {
+      @apply rounded-lg my-6 shadow-md;
+    }
+    
+    /* Horizontal Rules */
+    & hr {
+      @apply border-border my-8;
+    }
+    
+    /* Tables */
+    & table {
+      @apply w-full my-6 border-collapse;
+    }
+    
+    & thead {
+      @apply border-b-2 border-border;
+    }
+    
+    & th {
+      @apply text-left font-semibold text-foreground p-3;
+    }
+    
+    & td {
+      @apply text-muted-foreground p-3 border-t border-border;
+    }
+    
+    & tbody tr:hover {
+      @apply bg-muted/30;
+    }
+  }
+  
+  /* Size variants */
+  .prose-lg {
+    & h1 {
+      @apply text-5xl;
+    }
+    
+    & h2 {
+      @apply text-4xl;
+    }
+    
+    & h3 {
+      @apply text-3xl;
+    }
+    
+    & p, & li {
+      @apply text-lg leading-relaxed;
+    }
   }
 }
