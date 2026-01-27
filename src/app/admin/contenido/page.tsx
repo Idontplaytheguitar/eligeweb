@@ -391,28 +391,37 @@ function AboutTab({ content, updateContent }: { content: SiteContent; updateCont
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Imagen de perfil</label>
-            {content.aboutImage && (
-              <div className="mb-3 relative w-48 h-48 rounded-lg overflow-hidden border">
-                <Image
-                  src={content.aboutImage}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            )}
             {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
-              <>
-                <CldUploadWidget
-                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "estudioelige"}
-                  onSuccess={(result: unknown) => {
-                    const info = (result as { info?: { secure_url?: string } })?.info;
-                    if (info?.secure_url) {
-                      updateContent({ aboutImage: info.secure_url });
-                    }
-                  }}
-                >
-                  {({ open }: { open: () => void }) => (
+              <CldUploadWidget
+                uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "estudioelige"}
+                onSuccess={(result: unknown) => {
+                  const info = (result as { info?: { secure_url?: string } })?.info;
+                  if (info?.secure_url) {
+                    updateContent({ aboutImage: info.secure_url });
+                  }
+                }}
+              >
+                {({ open }: { open: () => void }) => (
+                  <>
+                    {content.aboutImage && (
+                      <div
+                        className="relative w-48 h-48 rounded-lg overflow-hidden border cursor-pointer group mb-3"
+                        onClick={() => open()}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => e.key === "Enter" && open()}
+                      >
+                        <Image
+                          src={content.aboutImage}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                          <span className="text-white text-sm font-medium">Cambiar imagen</span>
+                        </div>
+                      </div>
+                    )}
                     <Button
                       type="button"
                       variant="outline"
@@ -420,14 +429,24 @@ function AboutTab({ content, updateContent }: { content: SiteContent; updateCont
                     >
                       {content.aboutImage ? "Cambiar imagen" : "Subir imagen"}
                     </Button>
-                  )}
-                </CldUploadWidget>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Subí una imagen desde tu computadora
-                </p>
-              </>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Subí una imagen desde tu computadora
+                    </p>
+                  </>
+                )}
+              </CldUploadWidget>
             ) : (
               <>
+                {content.aboutImage && (
+                  <div className="mb-3 relative w-48 h-48 rounded-lg overflow-hidden border">
+                    <Image
+                      src={content.aboutImage}
+                      alt="Preview"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
                 <Input
                   type="url"
                   value={content.aboutImage ?? ""}
@@ -436,7 +455,7 @@ function AboutTab({ content, updateContent }: { content: SiteContent; updateCont
                   className="mb-2"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Pegá la URL de la imagen. Para subir desde el equipo, configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME en el entorno (Vercel o .env).
+                  Pegá la URL de la imagen. Para subir desde el equipo, configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET en el entorno. En Vercel: Settings → Environment Variables, agregá esas variables y volvé a desplegar.
                 </p>
               </>
             )}

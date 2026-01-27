@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { CldUploadWidget } from "next-cloudinary";
 import {
   Loader2,
   Save,
@@ -158,14 +159,67 @@ export function BlogEditor({ post, onSave, onCancel, isSaving }: BlogEditorProps
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Imagen de portada (URL)</label>
-              <Input
-                value={currentPost.coverImage || ""}
-                onChange={(e) =>
-                  setCurrentPost({ ...currentPost, coverImage: e.target.value })
-                }
-                placeholder="https://ejemplo.com/imagen.jpg"
-              />
+              <label className="text-sm font-medium">Imagen de portada</label>
+              {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
+                <CldUploadWidget
+                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "estudioelige"}
+                  onSuccess={(result: unknown) => {
+                    const info = (result as { info?: { secure_url?: string } })?.info;
+                    if (info?.secure_url) {
+                      setCurrentPost({ ...currentPost, coverImage: info.secure_url });
+                    }
+                  }}
+                >
+                  {({ open }: { open: () => void }) => (
+                    <div className="space-y-2">
+                      {currentPost.coverImage && (
+                        <div
+                          className="relative w-48 h-48 rounded-lg overflow-hidden border cursor-pointer group"
+                          onClick={() => open()}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => e.key === "Enter" && open()}
+                        >
+                          <img
+                            src={currentPost.coverImage}
+                            alt="Portada"
+                            className="object-cover w-full h-full"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <span className="text-white text-sm font-medium">Cambiar imagen</span>
+                          </div>
+                        </div>
+                      )}
+                      <Button type="button" variant="outline" size="sm" onClick={() => open()}>
+                        {currentPost.coverImage ? "Cambiar imagen" : "Subir imagen"}
+                      </Button>
+                    </div>
+                  )}
+                </CldUploadWidget>
+              ) : null}
+              {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
+                <Input
+                  value={currentPost.coverImage || ""}
+                  onChange={(e) =>
+                    setCurrentPost({ ...currentPost, coverImage: e.target.value })
+                  }
+                  placeholder="O pegá una URL"
+                  className="max-w-md"
+                />
+              ) : (
+                <>
+                  <Input
+                    value={currentPost.coverImage || ""}
+                    onChange={(e) =>
+                      setCurrentPost({ ...currentPost, coverImage: e.target.value })
+                    }
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Pegá la URL. Para subir desde el equipo, configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET. En Vercel: Settings → Environment Variables, agregá esas variables y volvé a desplegar.
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="space-y-2">
