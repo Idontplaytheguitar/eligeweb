@@ -82,11 +82,11 @@ model ContactMessage {
 model Meeting {
   id              String   @id
   name            String
-  email           String
+  email           String?
   phone           String?
-  date            String
-  time            String
-  endTime         String
+  date            String?
+  time            String?
+  endTime         String?
   type            String   @default("google_meet")
   meetingType     String   @default("google_meet")
   meetLink        String?

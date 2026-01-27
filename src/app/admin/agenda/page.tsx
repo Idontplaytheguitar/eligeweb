@@ -32,11 +32,11 @@ import {
 interface Meeting {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
-  date: string;
-  time: string;
-  endTime: string;
+  date: string | null;
+  time: string | null;
+  endTime: string | null;
   type: string;
   meetingType: string;
   meetLink: string | null;
@@ -215,12 +215,16 @@ export default function AdminAgendaPage() {
     }
   };
 
-  const upcomingMeetings = meetings.filter(
-    (m) => m.status !== "cancelled" && new Date(`${m.date}T${m.time}`) >= new Date()
-  );
-  const pastMeetings = meetings.filter(
-    (m) => m.status === "cancelled" || new Date(`${m.date}T${m.time}`) < new Date()
-  );
+  const upcomingMeetings = meetings.filter((m) => {
+    if (m.status === "cancelled") return false;
+    if (!m.date || !m.time) return true; // "A acordar" sin fecha → listar como próximas
+    return new Date(`${m.date}T${m.time}`) >= new Date();
+  });
+  const pastMeetings = meetings.filter((m) => {
+    if (m.status === "cancelled") return true;
+    if (!m.date || !m.time) return false;
+    return new Date(`${m.date}T${m.time}`) < new Date();
+  });
 
   if (isLoading) {
     return (
@@ -285,13 +289,14 @@ export default function AdminAgendaPage() {
                             </div>
                             <div className="text-sm text-muted-foreground space-y-1">
                               <p>
-                                {new Date(meeting.date + "T12:00:00").toLocaleDateString(
-                                  "es-AR",
-                                  { weekday: "long", day: "numeric", month: "long" }
-                                )}{" "}
-                                - {meeting.time} a {meeting.endTime}
+                                {meeting.date && meeting.time && meeting.endTime
+                                  ? `${new Date(meeting.date + "T12:00:00").toLocaleDateString(
+                                      "es-AR",
+                                      { weekday: "long", day: "numeric", month: "long" }
+                                    )} - ${meeting.time} a ${meeting.endTime}`
+                                  : "A coordinar"}
                               </p>
-                              <p>{meeting.email}</p>
+                              <p>{meeting.email ?? meeting.phone ?? "—"}</p>
                               {meeting.phone && <p>{meeting.phone}</p>}
                               {meeting.notes && (
                                 <p className="italic">&ldquo;{meeting.notes}&rdquo;</p>
@@ -364,7 +369,9 @@ export default function AdminAgendaPage() {
                               {getMeetingTypeLabel(meeting.meetingType || meeting.type)}
                             </Badge>
                             <span className="text-sm text-muted-foreground">
-                              {new Date(meeting.date).toLocaleDateString("es-AR")} - {meeting.time}
+                              {meeting.date && meeting.time
+                                ? `${new Date(meeting.date).toLocaleDateString("es-AR")} - ${meeting.time}`
+                                : "A coordinar"}
                             </span>
                           </div>
                           <Button

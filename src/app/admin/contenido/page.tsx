@@ -25,6 +25,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
+import { CldUploadWidget } from "next-cloudinary";
+import { IconPicker } from "@/components/admin/IconPicker";
+import Image from "next/image";
 
 type TabId = "hero" | "about" | "services" | "testimonials" | "faqs" | "whychoose" | "process" | "contact" | "footer";
 
@@ -387,14 +390,37 @@ function AboutTab({ content, updateContent }: { content: SiteContent; updateCont
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">URL de la imagen</label>
-            <Input
-              value={content.aboutImage}
-              onChange={(e) => updateContent({ aboutImage: e.target.value })}
-              placeholder="/ruta/a/imagen.jpg"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Imágenes disponibles: /EstudioFrentePerfil.jpeg, /EstudioFrente.jpeg, /EstudioFrenteLejos.jpeg, /EstudioDentroDesk.jpeg
+            <label className="block text-sm font-medium mb-2">Imagen de perfil</label>
+            {content.aboutImage && (
+              <div className="mb-3 relative w-48 h-48 rounded-lg overflow-hidden border">
+                <Image
+                  src={content.aboutImage}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <CldUploadWidget
+              uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "estudioelige"}
+              onSuccess={(result: any) => {
+                if (result?.info?.secure_url) {
+                  updateContent({ aboutImage: result.info.secure_url });
+                }
+              }}
+            >
+              {({ open }) => (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => open()}
+                >
+                  {content.aboutImage ? "Cambiar imagen" : "Subir imagen"}
+                </Button>
+              )}
+            </CldUploadWidget>
+            <p className="text-xs text-muted-foreground mt-2">
+              Subí una imagen desde tu computadora
             </p>
           </div>
           <div>
@@ -430,26 +456,35 @@ Segundo párrafo..."
               <CardContent className="pt-4 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-3">
-                    <Input
-                      value={item.title}
-                      onChange={(e) => updateTimelineItem(index, { title: e.target.value })}
-                      placeholder="Título del evento"
-                    />
-                    <Input
-                      value={item.date}
-                      onChange={(e) => updateTimelineItem(index, { date: e.target.value })}
-                      placeholder="Fecha (ej: 2020 - 2023)"
-                    />
-                    <Textarea
-                      value={item.description}
-                      onChange={(e) => updateTimelineItem(index, { description: e.target.value })}
-                      placeholder="Descripción"
-                      rows={2}
-                    />
-                    <Input
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Título del evento</label>
+                      <Input
+                        value={item.title}
+                        onChange={(e) => updateTimelineItem(index, { title: e.target.value })}
+                        placeholder="Fundadora de ELIGE"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Fecha</label>
+                      <Input
+                        value={item.date}
+                        onChange={(e) => updateTimelineItem(index, { date: e.target.value })}
+                        placeholder="Diciembre 2022 - Presente"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Descripción</label>
+                      <Textarea
+                        value={item.description}
+                        onChange={(e) => updateTimelineItem(index, { description: e.target.value })}
+                        placeholder="Descripción del evento o logro"
+                        rows={2}
+                      />
+                    </div>
+                    <IconPicker
+                      label="Ícono"
                       value={item.icon}
-                      onChange={(e) => updateTimelineItem(index, { icon: e.target.value })}
-                      placeholder="Ícono (Briefcase, Award, GraduationCap, etc.)"
+                      onChange={(iconName) => updateTimelineItem(index, { icon: iconName })}
                     />
                   </div>
                   <Button
@@ -542,23 +577,32 @@ function ServicesTab({ content, updateContent }: { content: SiteContent; updateC
               
               {editingIndex === index && (
                 <div className="space-y-3">
-                  <Input
-                    value={service.title}
-                    onChange={(e) => updateService(index, { title: e.target.value })}
-                    placeholder="Título del servicio"
-                  />
-                  <Textarea
-                    value={service.shortDescription}
-                    onChange={(e) => updateService(index, { shortDescription: e.target.value })}
-                    placeholder="Descripción corta"
-                    rows={2}
-                  />
-                  <Textarea
-                    value={service.fullDescription}
-                    onChange={(e) => updateService(index, { fullDescription: e.target.value })}
-                    placeholder="Descripción completa"
-                    rows={3}
-                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Título del servicio</label>
+                    <Input
+                      value={service.title}
+                      onChange={(e) => updateService(index, { title: e.target.value })}
+                      placeholder="Asesoramiento Legal"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Descripción corta</label>
+                    <Textarea
+                      value={service.shortDescription}
+                      onChange={(e) => updateService(index, { shortDescription: e.target.value })}
+                      placeholder="Descripción breve del servicio"
+                      rows={2}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Descripción completa</label>
+                    <Textarea
+                      value={service.fullDescription}
+                      onChange={(e) => updateService(index, { fullDescription: e.target.value })}
+                      placeholder="Descripción detallada del servicio"
+                      rows={3}
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Incluye (uno por línea)</label>
                     <Textarea
@@ -568,16 +612,19 @@ function ServicesTab({ content, updateContent }: { content: SiteContent; updateC
                       rows={4}
                     />
                   </div>
-                  <Textarea
-                    value={service.forWho}
-                    onChange={(e) => updateService(index, { forWho: e.target.value })}
-                    placeholder="¿Para quién está dirigido?"
-                    rows={2}
-                  />
-                  <Input
+                  <div>
+                    <label className="block text-sm font-medium mb-2">¿Para quién está dirigido?</label>
+                    <Textarea
+                      value={service.forWho}
+                      onChange={(e) => updateService(index, { forWho: e.target.value })}
+                      placeholder="Empresas, particulares, etc."
+                      rows={2}
+                    />
+                  </div>
+                  <IconPicker
+                    label="Ícono"
                     value={service.icon}
-                    onChange={(e) => updateService(index, { icon: e.target.value })}
-                    placeholder="Ícono (Briefcase, Scale, Users, FileText, Car, ShieldCheck)"
+                    onChange={(iconName) => updateService(index, { icon: iconName })}
                   />
                 </div>
               )}
@@ -634,22 +681,31 @@ function TestimonialsTab({ content, updateContent }: { content: SiteContent; upd
             <CardContent className="pt-4 space-y-3">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 space-y-3">
-                  <Input
-                    value={testimonial.initials}
-                    onChange={(e) => updateTestimonial(index, { initials: e.target.value })}
-                    placeholder="Iniciales (ej: M.G.)"
-                  />
-                  <Textarea
-                    value={testimonial.text}
-                    onChange={(e) => updateTestimonial(index, { text: e.target.value })}
-                    placeholder="Testimonio del cliente"
-                    rows={3}
-                  />
-                  <Input
-                    value={testimonial.location}
-                    onChange={(e) => updateTestimonial(index, { location: e.target.value })}
-                    placeholder="Ubicación (ej: Capital Federal)"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Iniciales</label>
+                    <Input
+                      value={testimonial.initials}
+                      onChange={(e) => updateTestimonial(index, { initials: e.target.value })}
+                      placeholder="M.G."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Testimonio</label>
+                    <Textarea
+                      value={testimonial.text}
+                      onChange={(e) => updateTestimonial(index, { text: e.target.value })}
+                      placeholder="Opinión del cliente sobre el servicio"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Ubicación</label>
+                    <Input
+                      value={testimonial.location}
+                      onChange={(e) => updateTestimonial(index, { location: e.target.value })}
+                      placeholder="Capital Federal"
+                    />
+                  </div>
                 </div>
                 <Button
                   variant="ghost"
@@ -707,17 +763,23 @@ function FAQsTab({ content, updateContent }: { content: SiteContent; updateConte
             <CardContent className="pt-4 space-y-3">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 space-y-3">
-                  <Input
-                    value={faq.question}
-                    onChange={(e) => updateFAQ(index, { question: e.target.value })}
-                    placeholder="Pregunta"
-                  />
-                  <Textarea
-                    value={faq.answer}
-                    onChange={(e) => updateFAQ(index, { answer: e.target.value })}
-                    placeholder="Respuesta"
-                    rows={3}
-                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Pregunta</label>
+                    <Input
+                      value={faq.question}
+                      onChange={(e) => updateFAQ(index, { question: e.target.value })}
+                      placeholder="¿Cuál es tu pregunta?"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Respuesta</label>
+                    <Textarea
+                      value={faq.answer}
+                      onChange={(e) => updateFAQ(index, { answer: e.target.value })}
+                      placeholder="La respuesta a la pregunta"
+                      rows={3}
+                    />
+                  </div>
                 </div>
                 <Button
                   variant="ghost"
@@ -776,21 +838,27 @@ function WhyChooseTab({ content, updateContent }: { content: SiteContent; update
             <CardContent className="pt-4 space-y-3">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 space-y-3">
-                  <Input
-                    value={item.title}
-                    onChange={(e) => updateItem(index, { title: e.target.value })}
-                    placeholder="Título"
-                  />
-                  <Textarea
-                    value={item.description}
-                    onChange={(e) => updateItem(index, { description: e.target.value })}
-                    placeholder="Descripción"
-                    rows={2}
-                  />
-                  <Input
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Título</label>
+                    <Input
+                      value={item.title}
+                      onChange={(e) => updateItem(index, { title: e.target.value })}
+                      placeholder="Experiencia comprobada"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Descripción</label>
+                    <Textarea
+                      value={item.description}
+                      onChange={(e) => updateItem(index, { description: e.target.value })}
+                      placeholder="Explicación de la ventaja o beneficio"
+                      rows={2}
+                    />
+                  </div>
+                  <IconPicker
+                    label="Ícono"
                     value={item.icon}
-                    onChange={(e) => updateItem(index, { icon: e.target.value })}
-                    placeholder="Ícono (Award, UserCheck, Clock, BadgeDollarSign, MessageSquare)"
+                    onChange={(iconName) => updateItem(index, { icon: iconName })}
                   />
                 </div>
                 <Button
@@ -854,27 +922,33 @@ function ProcessTab({ content, updateContent }: { content: SiteContent; updateCo
             <CardContent className="pt-4 space-y-3">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-primary">
-                      {step.step}
-                    </span>
-                    <Input
-                      value={step.title}
-                      onChange={(e) => updateStep(index, { title: e.target.value })}
-                      placeholder="Título del paso"
-                      className="flex-1"
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Título del paso</label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-primary">
+                        {step.step}
+                      </span>
+                      <Input
+                        value={step.title}
+                        onChange={(e) => updateStep(index, { title: e.target.value })}
+                        placeholder="Consulta inicial"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Descripción</label>
+                    <Textarea
+                      value={step.description}
+                      onChange={(e) => updateStep(index, { description: e.target.value })}
+                      placeholder="Descripción del paso del proceso"
+                      rows={2}
                     />
                   </div>
-                  <Textarea
-                    value={step.description}
-                    onChange={(e) => updateStep(index, { description: e.target.value })}
-                    placeholder="Descripción"
-                    rows={2}
-                  />
-                  <Input
+                  <IconPicker
+                    label="Ícono"
                     value={step.icon}
-                    onChange={(e) => updateStep(index, { icon: e.target.value })}
-                    placeholder="Ícono (MessageCircle, Target, Handshake)"
+                    onChange={(iconName) => updateStep(index, { icon: iconName })}
                   />
                 </div>
                 <Button

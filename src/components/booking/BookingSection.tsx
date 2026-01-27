@@ -53,6 +53,65 @@ const MEETING_TYPES = [
   }
 ];
 
+type FieldRequirements = {
+  requiresEmail: boolean;
+  requiresPhone: boolean;
+  phoneOrEmailRequired: boolean;
+  allowsScheduling: boolean;
+  showEmail: boolean;
+  showPhone: boolean;
+};
+
+function getFieldRequirements(meetingType: string): FieldRequirements {
+  switch (meetingType) {
+    case 'google_meet':
+      return {
+        requiresEmail: true,
+        requiresPhone: false,
+        phoneOrEmailRequired: false,
+        allowsScheduling: true,
+        showEmail: true,
+        showPhone: true,
+      };
+    case 'whatsapp':
+      return {
+        requiresEmail: false,
+        requiresPhone: true,
+        phoneOrEmailRequired: false,
+        allowsScheduling: true,
+        showEmail: false,
+        showPhone: true,
+      };
+    case 'presencial':
+      return {
+        requiresEmail: false,
+        requiresPhone: false,
+        phoneOrEmailRequired: true,
+        allowsScheduling: true,
+        showEmail: true,
+        showPhone: true,
+      };
+    case 'acordar':
+      return {
+        requiresEmail: false,
+        requiresPhone: false,
+        phoneOrEmailRequired: true,
+        allowsScheduling: false,
+        showEmail: true,
+        showPhone: true,
+      };
+    default:
+      return {
+        requiresEmail: true,
+        requiresPhone: false,
+        phoneOrEmailRequired: false,
+        allowsScheduling: true,
+        showEmail: true,
+        showPhone: true,
+      };
+  }
+}
+
 export function BookingSection() {
   const [config, setConfig] = useState<BookingConfigData>(defaultBookingConfig);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -65,9 +124,12 @@ export function BookingSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [meetLink, setMeetLink] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string>("");
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  const fieldReqs = getFieldRequirements(meetingType);
 
   useEffect(() => {
     fetch("/api/admin/booking-config")
@@ -90,11 +152,16 @@ export function BookingSection() {
   }, []);
 
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDate && fieldReqs.allowsScheduling) {
       fetchSlots(selectedDate);
       setSelectedTime(null);
     }
-  }, [selectedDate, fetchSlots]);
+  }, [selectedDate, fetchSlots, fieldReqs.allowsScheduling]);
+
+  // Reset validation error when form changes
+  useEffect(() => {
+    setValidationError("");
+  }, [formData, meetingType]);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -116,7 +183,21 @@ export function BookingSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate || !selectedTime) return;
+    setValidationError("");
+
+    // Validación custom para campos condicionales
+    if (fieldReqs.phoneOrEmailRequired) {
+      if (!formData.email && !formData.phone) {
+        setValidationError("Debés proporcionar al menos un email o teléfono");
+        return;
+      }
+    }
+
+    // Solo validar fecha/hora si permite agendamiento
+    if (fieldReqs.allowsScheduling && (!selectedDate || !selectedTime)) {
+      setValidationError("Seleccioná una fecha y horario");
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -126,8 +207,8 @@ export function BookingSection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          date: selectedDate,
-          time: selectedTime,
+          date: fieldReqs.allowsScheduling ? selectedDate : null,
+          time: fieldReqs.allowsScheduling ? selectedTime : null,
           meetingType: meetingType,
         }),
       });
@@ -138,10 +219,10 @@ export function BookingSection() {
         setIsSuccess(true);
         setMeetLink(data.meeting?.meetLink || null);
       } else {
-        alert(data.error || "Error al agendar");
+        setValidationError(data.error || "Error al procesar la solicitud");
       }
     } catch {
-      alert("Error de conexión");
+      setValidationError("Error de conexión");
     } finally {
       setIsSubmitting(false);
     }
@@ -150,6 +231,8 @@ export function BookingSection() {
   const days = getDaysInMonth(currentMonth);
 
   if (isSuccess) {
+    const wasScheduled = fieldReqs.allowsScheduling;
+    
     return (
       <section className="section-padding bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4 md:px-6 max-w-2xl text-center">
@@ -161,10 +244,12 @@ export function BookingSection() {
             <Check className="w-10 h-10 text-green-500" />
           </motion.div>
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            ¡Reunión agendada!
+            {wasScheduled ? '¡Reunión agendada!' : '¡Solicitud enviada!'}
           </h2>
           <p className="text-muted-foreground mb-4">
-            Te enviamos un email con los detalles de la reunión.
+            {wasScheduled 
+              ? 'Te enviamos un email con los detalles de la reunión.'
+              : 'Te contactaremos a la brevedad para coordinar la reunión.'}
           </p>
           {meetLink && (
             <div className="mb-6">
@@ -189,7 +274,7 @@ export function BookingSection() {
             setMeetLink(null);
             }}
           >
-            Agendar otra reunión
+            {wasScheduled ? 'Agendar otra reunión' : 'Enviar otra solicitud'}
           </Button>
         </div>
       </section>
@@ -231,120 +316,122 @@ export function BookingSection() {
           </motion.p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold">
-                    {currentMonth.toLocaleDateString("es-AR", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </h3>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        setCurrentMonth(
-                          new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
-                        )
-                      }
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        setCurrentMonth(
-                          new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
-                        )
-                      }
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                  {DAYS_SHORT.map((day: string) => (
-                    <div key={day} className="text-center text-xs text-muted-foreground py-2">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-7 gap-1">
-                  {days.map((day: Date | null, index: number) => {
-                    if (!day) {
-                      return <div key={`empty-${index}`} className="aspect-square" />;
-                    }
-
-                    const dateStr = day.toISOString().split("T")[0];
-                    const available = isDateAvailable(day, config);
-                    const isSelected = selectedDate === dateStr;
-
-                    return (
-                      <button
-                        key={dateStr}
-                        onClick={() => available && setSelectedDate(dateStr)}
-                        disabled={!available}
-                        className={`aspect-square rounded-lg text-sm font-medium transition-all ${
-                          isSelected
-                            ? "bg-primary text-primary-foreground"
-                            : available
-                            ? "hover:bg-primary/20 hover:text-primary"
-                            : "text-muted-foreground/40 cursor-not-allowed"
-                        }`}
+        <div className={`grid ${fieldReqs.allowsScheduling ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-8 max-w-5xl mx-auto`}>
+          {fieldReqs.allowsScheduling && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold">
+                      {currentMonth.toLocaleDateString("es-AR", {
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </h3>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          setCurrentMonth(
+                            new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+                          )
+                        }
                       >
-                        {day.getDate()}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {selectedDate && (
-                  <div className="mt-6 pt-6 border-t">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      Horarios disponibles
-                    </h4>
-                    {isLoadingSlots ? (
-                      <div className="flex justify-center py-4">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                      </div>
-                    ) : availableSlots.length > 0 ? (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                        {availableSlots.map((time: string) => (
-                          <button
-                            key={time}
-                            onClick={() => setSelectedTime(time)}
-                            className={`py-2 px-3 rounded-lg text-sm font-medium transition-all border ${
-                              selectedTime === time
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "border-border hover:border-primary hover:text-primary"
-                            }`}
-                          >
-                            {time}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-center text-muted-foreground py-4">
-                        No hay horarios disponibles para esta fecha
-                      </p>
-                    )}
+                        <ChevronLeft className="w-5 h-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          setCurrentMonth(
+                            new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+                          )
+                        }
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </Button>
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {DAYS_SHORT.map((day: string) => (
+                      <div key={day} className="text-center text-xs text-muted-foreground py-2">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-1">
+                    {days.map((day: Date | null, index: number) => {
+                      if (!day) {
+                        return <div key={`empty-${index}`} className="aspect-square" />;
+                      }
+
+                      const dateStr = day.toISOString().split("T")[0];
+                      const available = isDateAvailable(day, config);
+                      const isSelected = selectedDate === dateStr;
+
+                      return (
+                        <button
+                          key={dateStr}
+                          onClick={() => available && setSelectedDate(dateStr)}
+                          disabled={!available}
+                          className={`aspect-square rounded-lg text-sm font-medium transition-all ${
+                            isSelected
+                              ? "bg-primary text-primary-foreground"
+                              : available
+                              ? "hover:bg-primary/20 hover:text-primary"
+                              : "text-muted-foreground/40 cursor-not-allowed"
+                          }`}
+                        >
+                          {day.getDate()}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {selectedDate && (
+                    <div className="mt-6 pt-6 border-t">
+                      <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Horarios disponibles
+                      </h4>
+                      {isLoadingSlots ? (
+                        <div className="flex justify-center py-4">
+                          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                        </div>
+                      ) : availableSlots.length > 0 ? (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                          {availableSlots.map((time: string) => (
+                            <button
+                              key={time}
+                              onClick={() => setSelectedTime(time)}
+                              className={`py-2 px-3 rounded-lg text-sm font-medium transition-all border ${
+                                selectedTime === time
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "border-border hover:border-primary hover:text-primary"
+                              }`}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-center text-muted-foreground py-4">
+                          No hay horarios disponibles para esta fecha
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -395,28 +482,35 @@ export function BookingSection() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Email *</label>
-                    <Input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="tu@email.com"
-                    />
-                  </div>
+                  {fieldReqs.showEmail && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Email {fieldReqs.requiresEmail ? '*' : fieldReqs.phoneOrEmailRequired ? '(email o teléfono requerido)' : <span className="text-muted-foreground">(opcional)</span>}
+                      </label>
+                      <Input
+                        type="email"
+                        required={fieldReqs.requiresEmail}
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="tu@email.com"
+                      />
+                    </div>
+                  )}
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Teléfono <span className="text-muted-foreground">(opcional)</span>
-                    </label>
-                    <Input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="+54 11 1234-5678"
-                    />
-                  </div>
+                  {fieldReqs.showPhone && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Teléfono {fieldReqs.requiresPhone ? '*' : fieldReqs.phoneOrEmailRequired ? '(email o teléfono requerido)' : <span className="text-muted-foreground">(opcional)</span>}
+                      </label>
+                      <Input
+                        type="tel"
+                        required={fieldReqs.requiresPhone}
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="+54 11 1234-5678"
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
@@ -430,26 +524,44 @@ export function BookingSection() {
                     />
                   </div>
 
+                  {validationError && (
+                    <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
+                      {validationError}
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
                     className="w-full"
                     size="lg"
-                    disabled={!selectedDate || !selectedTime || isSubmitting}
+                    disabled={
+                      isSubmitting || 
+                      (fieldReqs.allowsScheduling && (!selectedDate || !selectedTime))
+                    }
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                        Agendando...
+                        {fieldReqs.allowsScheduling ? 'Agendando...' : 'Enviando...'}
                       </>
                     ) : (
                       <>
-                        <Calendar className="w-5 h-5 mr-2" />
-                        Agendar consulta
+                        {fieldReqs.allowsScheduling ? (
+                          <>
+                            <Calendar className="w-5 h-5 mr-2" />
+                            Agendar consulta
+                          </>
+                        ) : (
+                          <>
+                            <MessageSquare className="w-5 h-5 mr-2" />
+                            Enviar solicitud
+                          </>
+                        )}
                       </>
                     )}
                   </Button>
 
-                  {(!selectedDate || !selectedTime) && (
+                  {fieldReqs.allowsScheduling && (!selectedDate || !selectedTime) && (
                     <p className="text-center text-sm text-muted-foreground">
                       Seleccioná una fecha y horario para continuar
                     </p>

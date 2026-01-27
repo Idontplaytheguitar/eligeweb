@@ -9,56 +9,109 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, email, phone, date, time, notes, meetingType = 'google_meet' } = body;
 
-    if (!name || !email || !date || !time) {
+    // Validaciones condicionales según el tipo de reunión
+    if (!name) {
       return NextResponse.json(
-        { error: "Faltan campos requeridos" },
+        { error: "El nombre es requerido" },
         { status: 400 }
       );
     }
 
-    let meetingDuration = defaultBookingConfig.meetingDuration;
-
-    try {
-      const config = await prisma.bookingConfig.findUnique({
-        where: { id: "main" },
-      });
-      if (config) {
-        meetingDuration = config.meetingDuration;
-      }
-    } catch {
-      // Use default
+    switch (meetingType) {
+      case 'google_meet':
+        if (!email || !date || !time) {
+          return NextResponse.json(
+            { error: "Email, fecha y hora son requeridos para Google Meet" },
+            { status: 400 }
+          );
+        }
+        break;
+      
+      case 'whatsapp':
+        if (!phone || !date || !time) {
+          return NextResponse.json(
+            { error: "Teléfono, fecha y hora son requeridos para WhatsApp Call" },
+            { status: 400 }
+          );
+        }
+        break;
+      
+      case 'presencial':
+        if ((!email && !phone) || !date || !time) {
+          return NextResponse.json(
+            { error: "Email o teléfono, fecha y hora son requeridos para reunión presencial" },
+            { status: 400 }
+          );
+        }
+        break;
+      
+      case 'acordar':
+        if (!email && !phone) {
+          return NextResponse.json(
+            { error: "Email o teléfono son requeridos" },
+            { status: 400 }
+          );
+        }
+        // Para "acordar" no se requiere fecha/hora
+        break;
+      
+      default:
+        if (!email || !date || !time) {
+          return NextResponse.json(
+            { error: "Faltan campos requeridos" },
+            { status: 400 }
+          );
+        }
     }
 
-    const endTime = addMinutes(time, meetingDuration);
+    let meetingDuration = defaultBookingConfig.meetingDuration;
+    let endTime = null;
+
+    // Solo calcular endTime si hay fecha/hora
+    if (time) {
+      try {
+        const config = await prisma.bookingConfig.findUnique({
+          where: { id: "main" },
+        });
+        if (config) {
+          meetingDuration = config.meetingDuration;
+        }
+      } catch {
+        // Use default
+      }
+
+      endTime = addMinutes(time, meetingDuration);
+    }
+
     const meetingId = `meeting-${Date.now()}`;
 
     const meeting = {
       id: meetingId,
       name,
-      email,
+      email: email || null,
       phone: phone || null,
-      date,
-      time,
-      endTime,
+      date: date || null,
+      time: time || null,
+      endTime: endTime,
       type: "google_meet", // Legacy field
       meetingType: meetingType,
       notes: notes || null,
-      status: "pending",
+      status: meetingType === 'acordar' ? "pending" : "pending",
       meetLink: null as string | null,
       calendarEventId: null as string | null,
     };
 
-    // Solo crear evento de Google Calendar si el tipo es google_meet
-    if (meetingType === 'google_meet' && isGoogleCalendarConfigured()) {
+    // Solo crear evento de Google Calendar si tiene fecha/hora y es tipo google_meet
+    if (meetingType === 'google_meet' && date && time && endTime && isGoogleCalendarConfigured()) {
       const startDateTime = `${date}T${time}:00-03:00`;
       const endDateTime = `${date}T${endTime}:00-03:00`;
 
       const calendarResult = await createCalendarEvent({
         summary: `Consulta con ${name} - ELIGE`,
-        description: `Reunión de consulta legal con ${name}\n\nTeléfono: ${phone || "No proporcionado"}\nEmail: ${email}\n\nNotas: ${notes || "Sin notas"}`,
+        description: `Reunión de consulta legal con ${name}\n\nTeléfono: ${phone || "No proporcionado"}\nEmail: ${email || "No proporcionado"}\n\nNotas: ${notes || "Sin notas"}`,
         startDateTime,
         endDateTime,
-        attendeeEmail: email,
+        attendeeEmail: email || undefined,
         attendeeName: name,
         createMeetLink: true,
       });
@@ -68,29 +121,35 @@ export async function POST(request: NextRequest) {
         meeting.calendarEventId = calendarResult.eventId || null;
         meeting.status = "confirmed";
       }
-    } else {
+    } else if (meetingType !== 'acordar') {
+      // Confirmar reuniones que no son "acordar" aunque no tengan evento de calendario
       meeting.status = "confirmed";
     }
+    // Las reuniones "acordar" mantienen status "pending" hasta que se coordine
 
     await prisma.meeting.create({
       data: meeting,
     });
 
+    // Enviar emails solo si hay email y fecha/hora (no para "acordar")
     try {
-      await sendBookingConfirmation({
-        to: email,
-        name,
-        date,
-        time,
-        meetLink: meeting.meetLink || undefined,
-      });
+      if (email && date && time) {
+        await sendBookingConfirmation({
+          to: email,
+          name,
+          date,
+          time,
+          meetLink: meeting.meetLink || undefined,
+        });
+      }
 
+      // Siempre notificar al admin
       await sendBookingNotification({
         name,
-        email,
+        email: email || undefined,
         phone: phone || undefined,
-        date,
-        time,
+        date: date || undefined,
+        time: time || undefined,
         notes: notes || undefined,
       });
     } catch (emailError) {
