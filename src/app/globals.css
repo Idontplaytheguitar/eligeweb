@@ -84,11 +84,17 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  main {
+    @apply transition-opacity duration-200 ease-out;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight text-foreground;

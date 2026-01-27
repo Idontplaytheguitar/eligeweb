@@ -401,27 +401,45 @@ function AboutTab({ content, updateContent }: { content: SiteContent; updateCont
                 />
               </div>
             )}
-            <CldUploadWidget
-              uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "estudioelige"}
-              onSuccess={(result: any) => {
-                if (result?.info?.secure_url) {
-                  updateContent({ aboutImage: result.info.secure_url });
-                }
-              }}
-            >
-              {({ open }) => (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => open()}
+            {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
+              <>
+                <CldUploadWidget
+                  uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "estudioelige"}
+                  onSuccess={(result: unknown) => {
+                    const info = (result as { info?: { secure_url?: string } })?.info;
+                    if (info?.secure_url) {
+                      updateContent({ aboutImage: info.secure_url });
+                    }
+                  }}
                 >
-                  {content.aboutImage ? "Cambiar imagen" : "Subir imagen"}
-                </Button>
-              )}
-            </CldUploadWidget>
-            <p className="text-xs text-muted-foreground mt-2">
-              Subí una imagen desde tu computadora
-            </p>
+                  {({ open }: { open: () => void }) => (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => open()}
+                    >
+                      {content.aboutImage ? "Cambiar imagen" : "Subir imagen"}
+                    </Button>
+                  )}
+                </CldUploadWidget>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Subí una imagen desde tu computadora
+                </p>
+              </>
+            ) : (
+              <>
+                <Input
+                  type="url"
+                  value={content.aboutImage ?? ""}
+                  onChange={(e) => updateContent({ aboutImage: e.target.value || "" })}
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                  className="mb-2"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Pegá la URL de la imagen. Para subir desde el equipo, configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME en el entorno (Vercel o .env).
+                </p>
+              </>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Biografía (separar párrafos con doble enter)</label>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar,
   Clock,
@@ -316,14 +316,22 @@ export function BookingSection() {
           </motion.p>
         </div>
 
-        <div className={`grid ${fieldReqs.allowsScheduling ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-8 max-w-5xl mx-auto`}>
-          {fieldReqs.allowsScheduling && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <Card>
+        <motion.div
+          layout
+          className={`grid ${fieldReqs.allowsScheduling ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-8 max-w-5xl mx-auto`}
+          transition={{ layout: { duration: 0.28, ease: "easeInOut" } }}
+        >
+          <AnimatePresence mode="popLayout">
+            {fieldReqs.allowsScheduling && (
+              <motion.div
+                key="calendar"
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -24 }}
+                transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
+                className="min-w-0"
+              >
+                <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-semibold">
@@ -430,10 +438,12 @@ export function BookingSection() {
                   )}
                 </CardContent>
               </Card>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <motion.div
+            layout={true}
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -570,7 +580,7 @@ export function BookingSection() {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
