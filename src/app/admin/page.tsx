@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, LogOut, FileText, GraduationCap, Mail, Key, Calendar, Layout, Settings } from "lucide-react";
+import { Loader2, LogOut, FileText, GraduationCap, Mail, Calendar, Layout, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -122,6 +122,9 @@ export default function AdminPage() {
                   "Ingresar"
                 )}
               </Button>
+              <p className="text-xs text-muted-foreground text-center pt-2 border-t mt-4">
+                Tras 5 intentos fallidos, el acceso queda bloqueado 5 minutos para esa dirección.
+              </p>
             </form>
           </CardContent>
         </Card>
@@ -135,12 +138,6 @@ export default function AdminPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold">Panel de Administración</h1>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/admin/configuracion#cambiar-contraseña">
-                <Key className="h-4 w-4 mr-2" />
-                Cambiar contraseña
-              </Link>
-            </Button>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Cerrar sesión

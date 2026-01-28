@@ -255,92 +255,99 @@ export default function AdminConfiguracionPage() {
               />
             </div>
 
-            <div id="cambiar-contraseña" className="pt-4 border-t space-y-4">
-              <h3 className="font-medium flex items-center gap-2">
+            <div id="cambiar-contraseña" className="pt-4 border-t">
+              <p className="text-sm font-semibold flex items-center gap-1.5 mb-2">
                 <Key className="h-4 w-4" />
                 Cambiar contraseña
-              </h3>
+              </p>
               {!adminEmailConfigured ? (
-                <p className="text-sm text-muted-foreground">
-                  Configurá el email arriba y guardá para poder cambiar la contraseña. Ese email
-                  recibe los códigos de verificación.
+                <p className="text-xs text-muted-foreground">
+                  Configurá el email arriba y guardá; ese email recibe los códigos.
                 </p>
               ) : !otpSent ? (
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={handleRequestOTP}
                     disabled={isSubmittingPassword}
                   >
                     {isSubmittingPassword ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      "Enviar código de verificación"
+                      "Enviar código"
                     )}
                   </Button>
                   {changePasswordMessage && (
-                    <p className="text-sm text-muted-foreground">{changePasswordMessage}</p>
+                    <p className="text-xs text-muted-foreground">{changePasswordMessage}</p>
                   )}
                 </div>
               ) : (
-                <form onSubmit={handleChangePassword} className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Código enviado a {otpEmail}. Ingresalo más abajo.
+                <form onSubmit={handleChangePassword} className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Código enviado a {otpEmail}.
                   </p>
-                  <div className="space-y-2">
-                    <label htmlFor="otp" className="text-sm font-medium">
-                      Código
-                    </label>
-                    <Input
-                      id="otp"
-                      type="text"
-                      placeholder="123456"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      maxLength={6}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="newPassword" className="text-sm font-medium">
-                      Nueva contraseña
-                    </label>
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      placeholder="••••••••"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      minLength={6}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="confirmPassword" className="text-sm font-medium">
-                      Confirmar contraseña
-                    </label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      minLength={6}
-                    />
+                  <div className="grid grid-cols-3 gap-2 items-end">
+                    <div className="space-y-1">
+                      <label htmlFor="otp" className="text-xs font-medium">
+                        Código
+                      </label>
+                      <Input
+                        id="otp"
+                        type="text"
+                        placeholder="123456"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        maxLength={6}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label htmlFor="newPassword" className="text-xs font-medium">
+                        Nueva
+                      </label>
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        placeholder="••••••••"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        minLength={6}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label htmlFor="confirmPassword" className="text-xs font-medium">
+                        Confirmar
+                      </label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="••••••••"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        minLength={6}
+                        className="h-8 text-sm"
+                      />
+                    </div>
                   </div>
                   {changePasswordMessage && (
-                    <p className="text-sm text-destructive">{changePasswordMessage}</p>
+                    <p className="text-xs text-destructive">{changePasswordMessage}</p>
                   )}
-                  <div className="flex flex-wrap gap-2">
-                    <Button type="submit" disabled={isSubmittingPassword}>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Button type="submit" size="sm" disabled={isSubmittingPassword}>
                       {isSubmittingPassword ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        "Cambiar contraseña"
+                        "Cambiar"
                       )}
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
+                      className="h-8 text-xs"
                       disabled={resendCooldown > 0 || isSubmittingPassword}
                       onClick={handleRequestOTP}
                     >
@@ -518,16 +525,6 @@ export default function AdminConfiguracionPage() {
                 }
               />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Info login */}
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">
-              Tras 5 intentos fallidos de login, el acceso queda bloqueado 5 minutos para esa
-              dirección.
-            </p>
           </CardContent>
         </Card>
 
