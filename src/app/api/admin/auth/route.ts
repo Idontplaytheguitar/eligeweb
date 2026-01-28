@@ -11,8 +11,22 @@ import {
   verifyOTP,
   setAdminPassword,
 } from "@/lib/auth";
-import { getAdminEmail, getAdminEmailForSettings } from "@/lib/admin-settings";
+import {
+  getAdminEmail,
+  getAdminEmailForSettings,
+  checkLoginLocked,
+  recordLoginFailure,
+  clearLoginAttempts,
+} from "@/lib/admin-settings";
 import { sendOTPEmail } from "@/lib/email";
+
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  const real = request.headers.get("x-real-ip");
+  if (real) return real.trim();
+  return "127.0.0.1";
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,15 +46,33 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const ip = getClientIp(request);
+      const lock = await checkLoginLocked(ip);
+      if (lock.locked) {
+        const min = Math.ceil(lock.retryAfterSeconds / 60);
+        return NextResponse.json(
+          { error: `Demasiados intentos. Probá de nuevo en ${min} minuto${min !== 1 ? "s" : ""}.` },
+          { status: 429 }
+        );
+      }
+
       const isValid = await verifyPassword(password);
 
       if (!isValid) {
+        const afterFail = await recordLoginFailure(ip);
+        if (afterFail.locked) {
+          return NextResponse.json(
+            { error: "Demasiados intentos. Probá de nuevo en 5 minutos." },
+            { status: 429 }
+          );
+        }
         return NextResponse.json(
           { error: "Contraseña incorrecta" },
           { status: 401 }
         );
       }
 
+      await clearLoginAttempts(ip);
       const token = await createSession();
       await setSessionCookie(token);
 

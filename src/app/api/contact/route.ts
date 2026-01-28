@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendContactEmail } from "@/lib/email";
+import { sendContactEmail, sendContactAutoReply } from "@/lib/email";
 import { contactFormSchema } from "@/lib/schemas";
+import { getNotifyOnContact, getContactAutoReplyEnabled } from "@/lib/admin-settings";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,17 +29,32 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    try {
-      await sendContactEmail({
-        name,
-        email,
-        phone,
-        preferWhatsApp: preferWhatsApp || false,
-        area,
-        message,
-      });
-    } catch (emailError) {
-      console.error("Error sending email:", emailError);
+    const [notifyOnContact, contactAutoReplyEnabled] = await Promise.all([
+      getNotifyOnContact(),
+      getContactAutoReplyEnabled(),
+    ]);
+
+    if (notifyOnContact) {
+      try {
+        await sendContactEmail({
+          name,
+          email,
+          phone,
+          preferWhatsApp: preferWhatsApp || false,
+          area,
+          message,
+        });
+      } catch (emailError) {
+        console.error("Error sending contact email to admin:", emailError);
+      }
+    }
+
+    if (contactAutoReplyEnabled) {
+      try {
+        await sendContactAutoReply(email);
+      } catch (autoReplyError) {
+        console.error("Error sending contact auto-reply to user:", autoReplyError);
+      }
     }
 
     return NextResponse.json({ success: true });

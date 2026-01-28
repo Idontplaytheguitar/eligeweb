@@ -17,16 +17,6 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [unseenCount, setUnseenCount] = useState(0);
 
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [adminEmailConfigured, setAdminEmailConfigured] = useState<boolean | null>(null);
-  const [otpSent, setOtpSent] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [otpEmail, setOtpEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [changePasswordMessage, setChangePasswordMessage] = useState("");
-
   const checkAuth = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/auth", {
@@ -53,25 +43,6 @@ export default function AdminPage() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-
-  useEffect(() => {
-    if (!showChangePassword || !isAuthenticated) {
-      if (!showChangePassword) setAdminEmailConfigured(null);
-      return;
-    }
-    let cancelled = false;
-    fetch("/api/admin/settings")
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled) setAdminEmailConfigured(data.adminEmail != null && data.adminEmail !== "");
-      })
-      .catch(() => {
-        if (!cancelled) setAdminEmailConfigured(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [showChangePassword, isAuthenticated]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,85 +79,6 @@ export default function AdminPage() {
     });
     setIsAuthenticated(false);
     router.refresh();
-  };
-
-  const handleRequestOTP = async () => {
-    setIsSubmitting(true);
-    setChangePasswordMessage("");
-
-    try {
-      const res = await fetch("/api/admin/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "request_otp" }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setChangePasswordMessage(data.error || "Error al enviar código");
-        return;
-      }
-
-      setOtpSent(true);
-      setOtpEmail(data.email);
-      setChangePasswordMessage(`Código enviado a ${data.email}`);
-      setResendCooldown(30);
-    } catch {
-      setChangePasswordMessage("Error de conexión");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const t = setInterval(() => setResendCooldown((s) => (s <= 1 ? 0 : s - 1)), 1000);
-    return () => clearInterval(t);
-  }, [resendCooldown]);
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setChangePasswordMessage("");
-
-    if (newPassword !== confirmPassword) {
-      setChangePasswordMessage("Las contraseñas no coinciden");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setChangePasswordMessage("La contraseña debe tener al menos 6 caracteres");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const res = await fetch("/api/admin/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "change_password", otp, newPassword }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setChangePasswordMessage(data.error || "Error al cambiar contraseña");
-        return;
-      }
-
-      setChangePasswordMessage("Contraseña cambiada exitosamente");
-      setShowChangePassword(false);
-      setOtpSent(false);
-      setResendCooldown(0);
-      setOtp("");
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch {
-      setChangePasswordMessage("Error de conexión");
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   if (isLoading) {
@@ -237,168 +129,17 @@ export default function AdminPage() {
     );
   }
 
-  if (showChangePassword) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Cambiar Contraseña</CardTitle>
-            <CardDescription>
-              {otpSent
-                ? `Ingresá el código enviado a ${otpEmail}`
-                : "Te enviaremos un código de verificación"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!otpSent ? (
-              <div className="space-y-4">
-                {adminEmailConfigured === null ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  </div>
-                ) : adminEmailConfigured === false ? (
-                  <div className="space-y-4">
-                    <p className="text-sm text-center text-muted-foreground">
-                      Para cambiar la contraseña primero tenés que configurar el email del administrador. Ese email recibe los códigos de verificación y las consultas del sitio.
-                    </p>
-                    <Button className="w-full" asChild>
-                      <Link href="/admin/configuracion">Ir a Configuración</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <Button
-                      onClick={handleRequestOTP}
-                      className="w-full"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        "Enviar código de verificación"
-                      )}
-                    </Button>
-                    {changePasswordMessage && (
-                      <p className="text-sm text-center text-muted-foreground">
-                        {changePasswordMessage}
-                      </p>
-                    )}
-                  </>
-                )}
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setShowChangePassword(false);
-                    setAdminEmailConfigured(null);
-                  }}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="otp" className="text-sm font-medium">
-                    Código de verificación
-                  </label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder="123456"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    required
-                    maxLength={6}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="newPassword" className="text-sm font-medium">
-                    Nueva contraseña
-                  </label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="text-sm font-medium">
-                    Confirmar contraseña
-                  </label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                {changePasswordMessage && (
-                  <p className="text-sm text-center text-destructive">
-                    {changePasswordMessage}
-                  </p>
-                )}
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Cambiar contraseña"
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full text-muted-foreground"
-                  disabled={resendCooldown > 0 || isSubmitting}
-                  onClick={handleRequestOTP}
-                >
-                  {resendCooldown > 0
-                    ? `Reenviar código (${resendCooldown}s)`
-                    : "Reenviar código"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setShowChangePassword(false);
-                    setOtpSent(false);
-                    setResendCooldown(0);
-                    setOtp("");
-                    setNewPassword("");
-                    setConfirmPassword("");
-                  }}
-                >
-                  Cancelar
-                </Button>
-              </form>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="border-b bg-header">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold">Panel de Administración</h1>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowChangePassword(true)}
-            >
-              <Key className="h-4 w-4 mr-2" />
-              Cambiar contraseña
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/admin/configuracion#cambiar-contraseña">
+                <Key className="h-4 w-4 mr-2" />
+                Cambiar contraseña
+              </Link>
             </Button>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />

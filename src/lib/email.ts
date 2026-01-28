@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { getAdminEmail } from "./admin-settings";
+import { getAdminEmail, getEmailSenderName, getContactAutoReplyText } from "./admin-settings";
 
 const FROM_EMAIL = process.env.SMTP_USER || "contacto@estudioelige.com";
 
@@ -38,12 +38,12 @@ export async function sendContactEmail(params: ContactEmailParams) {
     return;
   }
 
-  const to = await getAdminEmail();
+  const [to, senderName] = await Promise.all([getAdminEmail(), getEmailSenderName()]);
   const { name, email, phone, preferWhatsApp, area, message } = params;
 
   try {
     await transporter.sendMail({
-      from: `"ELIGE - Estudio Legal" <${FROM_EMAIL}>`,
+      from: `"${senderName}" <${FROM_EMAIL}>`,
       to,
       replyTo: email,
       subject: `📩 Nueva consulta de ${name}${area ? ` - ${area}` : ""}`,
@@ -100,7 +100,7 @@ export async function sendContactEmail(params: ContactEmailParams) {
               </div>
             </div>
             <div class="footer">
-              ELIGE - Estudio Legal Integral García Eldik
+              ${senderName}
             </div>
           </div>
         </body>
@@ -127,11 +127,12 @@ export async function sendPurchaseEmail(params: PurchaseEmailParams) {
     return;
   }
 
+  const senderName = await getEmailSenderName();
   const { to, name, workshopTitle, downloadUrl } = params;
 
   try {
     await transporter.sendMail({
-      from: `"ELIGE - Estudio Legal" <${FROM_EMAIL}>`,
+      from: `"${senderName}" <${FROM_EMAIL}>`,
       to,
       subject: `✅ Tu compra de "${workshopTitle}" está lista`,
       html: `
@@ -172,10 +173,10 @@ export async function sendPurchaseEmail(params: PurchaseEmailParams) {
               </div>
               
               <p style="margin-top: 24px;">Si tenés alguna consulta, no dudes en contactarnos.</p>
-              <p><strong>ELIGE - Estudio Legal</strong></p>
+              <p><strong>${senderName}</strong></p>
             </div>
             <div class="footer">
-              ELIGE - Estudio Legal Integral García Eldik
+              ${senderName}
             </div>
           </div>
         </body>
@@ -185,7 +186,7 @@ export async function sendPurchaseEmail(params: PurchaseEmailParams) {
 
     const adminTo = await getAdminEmail();
     await transporter.sendMail({
-      from: `"ELIGE - Estudio Legal" <${FROM_EMAIL}>`,
+      from: `"${senderName}" <${FROM_EMAIL}>`,
       to: adminTo,
       subject: `💰 Nueva venta: ${workshopTitle}`,
       html: `
@@ -240,9 +241,10 @@ export async function sendOTPEmail(to: string, otp: string) {
     return;
   }
 
+  const senderName = await getEmailSenderName();
   try {
     await transporter.sendMail({
-      from: `"ELIGE - Estudio Legal" <${FROM_EMAIL}>`,
+      from: `"${senderName}" <${FROM_EMAIL}>`,
       to,
       subject: `🔐 Tu código de verificación: ${otp}`,
       html: `
@@ -295,6 +297,7 @@ export async function sendBookingConfirmation(params: BookingConfirmationParams)
     return;
   }
 
+  const senderName = await getEmailSenderName();
   const { to, name, date, time, meetLink } = params;
   const dateObj = new Date(date + "T12:00:00");
   const formattedDate = dateObj.toLocaleDateString("es-AR", {
@@ -306,7 +309,7 @@ export async function sendBookingConfirmation(params: BookingConfirmationParams)
 
   try {
     await transporter.sendMail({
-      from: `"ELIGE - Estudio Legal" <${FROM_EMAIL}>`,
+      from: `"${senderName}" <${FROM_EMAIL}>`,
       to,
       subject: `📅 Consulta agendada - ${formattedDate} a las ${time}`,
       html: `
@@ -358,10 +361,10 @@ export async function sendBookingConfirmation(params: BookingConfirmationParams)
               `}
               
               <p style="margin-top: 24px;">Si necesitás reprogramar, respondé a este email.</p>
-              <p><strong>ELIGE - Estudio Legal</strong></p>
+              <p><strong>${senderName}</strong></p>
             </div>
             <div class="footer">
-              ELIGE - Estudio Legal Integral García Eldik
+              ${senderName}
             </div>
           </div>
         </body>
@@ -390,6 +393,7 @@ export async function sendBookingNotification(params: BookingNotificationParams)
     return;
   }
 
+  const [to, senderName] = await Promise.all([getAdminEmail(), getEmailSenderName()]);
   const { name, email, phone, date, time, notes } = params;
   const dateObj = new Date(date + "T12:00:00");
   const formattedDate = dateObj.toLocaleDateString("es-AR", {
@@ -398,10 +402,9 @@ export async function sendBookingNotification(params: BookingNotificationParams)
     month: "long",
   });
 
-  const to = await getAdminEmail();
   try {
     await transporter.sendMail({
-      from: `"ELIGE - Estudio Legal" <${FROM_EMAIL}>`,
+      from: `"${senderName}" <${FROM_EMAIL}>`,
       to,
       replyTo: email,
       subject: `📅 Nueva consulta agendada - ${name} - ${formattedDate} ${time}`,
@@ -456,7 +459,7 @@ export async function sendBookingNotification(params: BookingNotificationParams)
               ` : ""}
             </div>
             <div class="footer">
-              ELIGE - Estudio Legal Integral García Eldik
+              ${senderName}
             </div>
           </div>
         </body>
@@ -465,6 +468,66 @@ export async function sendBookingNotification(params: BookingNotificationParams)
     });
   } catch (error) {
     console.error("Error sending booking notification:", error);
+    throw error;
+  }
+}
+
+const DEFAULT_CONTACT_AUTO_REPLY =
+  "Recibimos tu consulta. Te responderemos a la brevedad.";
+
+/**
+ * Envía al usuario que llenó el formulario de contacto un mail de confirmación.
+ * El texto se toma de la DB (contactAutoReplyText); si está vacío se usa DEFAULT_CONTACT_AUTO_REPLY.
+ */
+export async function sendContactAutoReply(to: string): Promise<void> {
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.log("SMTP not configured, skipping contact auto-reply");
+    return;
+  }
+
+  const [senderName, customText] = await Promise.all([
+    getEmailSenderName(),
+    getContactAutoReplyText(),
+  ]);
+  const bodyText = (customText || DEFAULT_CONTACT_AUTO_REPLY).replace(/\n/g, "<br>");
+
+  try {
+    await transporter.sendMail({
+      from: `"${senderName}" <${FROM_EMAIL}>`,
+      to,
+      subject: `Recibimos tu consulta - ${senderName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc; margin: 0; padding: 20px; }
+            .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            .header { background: linear-gradient(135deg, #1e3a5f, #2563eb); padding: 24px; text-align: center; }
+            .header h1 { margin: 0; color: white; font-size: 20px; }
+            .content { padding: 24px; }
+            .footer { text-align: center; padding: 16px; color: #64748b; font-size: 12px; background: #f8fafc; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Consulta recibida</h1>
+            </div>
+            <div class="content">
+              <p>${bodyText}</p>
+            </div>
+            <div class="footer">
+              ${senderName}
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+  } catch (error) {
+    console.error("Error sending contact auto-reply:", error);
     throw error;
   }
 }

@@ -20,8 +20,24 @@ model AdminPassword {
 }
 
 model AdminConfig {
-  id         String  @id @default("main")
-  adminEmail String?
+  id                     String   @id @default("main")
+  adminEmail             String?
+  notifyOnContact        Boolean  @default(true)
+  notifyOnBooking        Boolean  @default(true)
+  emailSenderName        String?
+  whatsappDefaultMessage String?  @db.Text
+  contactAutoReplyEnabled Boolean @default(false)
+  contactAutoReplyText   String?  @db.Text
+  absenceNoticeEnabled   Boolean  @default(false)
+  absenceNoticeText      String?  @db.Text
+}
+
+model AdminLoginAttempt {
+  id          String    @id @default(cuid())
+  ipHash      String    @unique
+  attemptCount Int      @default(0)
+  lockedUntil DateTime?
+  updatedAt   DateTime  @updatedAt
 }
 
 model OTP {

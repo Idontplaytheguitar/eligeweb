@@ -1,11 +1,10 @@
 import { Metadata } from "next";
-import { Phone, Mail, MapPin, Clock, MessageCircle, Instagram, Facebook } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Instagram, Facebook } from "lucide-react";
 import { ContactForm } from "@/components/contact/ContactForm";
-import { WhatsAppQR } from "@/components/contact/WhatsAppQR";
-import { Button } from "@/components/ui/button";
+import { ContactWhatsAppCard } from "@/components/contact/ContactWhatsAppCard";
+import { AbsenceNoticeBanner } from "@/components/layout/AbsenceNoticeBanner";
 import { Card, CardContent } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
-import { getWhatsAppUrl } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Contacto",
@@ -14,8 +13,10 @@ export const metadata: Metadata = {
 
 export default function ContactoPage() {
   return (
-    <section className="section-padding bg-gradient-to-b from-muted/30 to-background">
-      <div className="container mx-auto px-4 md:px-6">
+    <>
+      <AbsenceNoticeBanner />
+      <section className="section-padding bg-gradient-to-b from-muted/30 to-background">
+        <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground">
             Contactanos
@@ -86,30 +87,7 @@ export default function ContactoPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="font-semibold text-xl text-foreground mb-4">
-                  ¿Preferís WhatsApp?
-                </h2>
-                <p className="text-muted-foreground mb-4">
-                  Escaneá el código QR o hacé clic en el botón.
-                </p>
-                <div className="flex flex-col items-center gap-4">
-                  <WhatsAppQR whatsappLink={getWhatsAppUrl("Hola, estoy en la página de contacto y quisiera comunicarme con ustedes.")} />
-                  <Button asChild className="w-full">
-                    <a
-                      href={getWhatsAppUrl("Hola, estoy en la página de contacto y quisiera comunicarme con ustedes.")}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2"
-                    >
-                      <MessageCircle className="h-5 w-5" />
-                      Abrir WhatsApp
-                    </a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <ContactWhatsAppCard />
 
             <Card>
               <CardContent className="pt-6">
@@ -161,7 +139,8 @@ export default function ContactoPage() {
             </Card> */}
           </div>
         </div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 }

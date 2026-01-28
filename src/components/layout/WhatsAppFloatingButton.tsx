@@ -1,13 +1,27 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { getWhatsAppUrl } from "@/lib/whatsapp";
 
 export function WhatsAppFloatingButton() {
+  const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/public-config")
+      .then((res) => res.json())
+      .then((data: { whatsappLink?: string }) => {
+        const link = typeof data.whatsappLink === "string" && data.whatsappLink ? data.whatsappLink : "";
+        setWhatsappLink(link);
+      })
+      .catch(() => setWhatsappLink(""));
+  }, []);
+
+  if (!whatsappLink) return null;
+
   return (
     <motion.a
-      href={getWhatsAppUrl()}
+      href={whatsappLink}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:bg-[#20BA5C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#25D366] focus:ring-offset-2"

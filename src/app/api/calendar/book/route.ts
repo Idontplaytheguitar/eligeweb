@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createCalendarEvent, isGoogleCalendarConfigured } from "@/lib/calendar";
 import { sendBookingConfirmation, sendBookingNotification } from "@/lib/email";
 import { addMinutes, defaultBookingConfig } from "@/lib/booking";
+import { getNotifyOnBooking } from "@/lib/admin-settings";
 
 export async function POST(request: NextRequest) {
   try {
@@ -143,15 +144,17 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Siempre notificar al admin
-      await sendBookingNotification({
-        name,
-        email: email || undefined,
-        phone: phone || undefined,
-        date: date || undefined,
-        time: time || undefined,
-        notes: notes || undefined,
-      });
+      const notifyOnBooking = await getNotifyOnBooking();
+      if (notifyOnBooking) {
+        await sendBookingNotification({
+          name,
+          email: email || "",
+          phone: phone || undefined,
+          date: date || "",
+          time: time || "",
+          notes: notes || undefined,
+        });
+      }
     } catch (emailError) {
       console.error("Error sending booking emails:", emailError);
     }

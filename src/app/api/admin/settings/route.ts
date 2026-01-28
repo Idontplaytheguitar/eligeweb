@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateSession } from "@/lib/auth";
-import {
-  getAdminEmailForSettings,
-  setAdminEmail,
-} from "@/lib/admin-settings";
+import { getAdminConfig, updateAdminConfig } from "@/lib/admin-settings";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -14,8 +11,8 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const adminEmail = await getAdminEmailForSettings();
-    return NextResponse.json({ adminEmail });
+    const config = await getAdminConfig();
+    return NextResponse.json(config);
   } catch (error) {
     console.error("Error getting admin settings:", error);
     return NextResponse.json(
@@ -33,24 +30,29 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { adminEmail: raw } = body;
-    const email = typeof raw === "string" ? raw.trim() : "";
 
-    if (!email) {
-      return NextResponse.json(
-        { error: "El email es requerido" },
-        { status: 400 }
-      );
+    const adminEmail = typeof body.adminEmail === "string" ? body.adminEmail.trim() : undefined;
+    if (adminEmail !== undefined && adminEmail !== "") {
+      if (!EMAIL_REGEX.test(adminEmail)) {
+        return NextResponse.json(
+          { error: "Formato de email inválido" },
+          { status: 400 }
+        );
+      }
     }
 
-    if (!EMAIL_REGEX.test(email)) {
-      return NextResponse.json(
-        { error: "Formato de email inválido" },
-        { status: 400 }
-      );
-    }
+    await updateAdminConfig({
+      adminEmail: body.adminEmail !== undefined ? (body.adminEmail === "" ? null : body.adminEmail) : undefined,
+      notifyOnContact: typeof body.notifyOnContact === "boolean" ? body.notifyOnContact : undefined,
+      notifyOnBooking: typeof body.notifyOnBooking === "boolean" ? body.notifyOnBooking : undefined,
+      emailSenderName: body.emailSenderName !== undefined ? body.emailSenderName : undefined,
+      whatsappDefaultMessage: body.whatsappDefaultMessage !== undefined ? body.whatsappDefaultMessage : undefined,
+      contactAutoReplyEnabled: typeof body.contactAutoReplyEnabled === "boolean" ? body.contactAutoReplyEnabled : undefined,
+      contactAutoReplyText: body.contactAutoReplyText !== undefined ? body.contactAutoReplyText : undefined,
+      absenceNoticeEnabled: typeof body.absenceNoticeEnabled === "boolean" ? body.absenceNoticeEnabled : undefined,
+      absenceNoticeText: body.absenceNoticeText !== undefined ? body.absenceNoticeText : undefined,
+    });
 
-    await setAdminEmail(email);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error saving admin settings:", error);
