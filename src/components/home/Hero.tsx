@@ -5,6 +5,7 @@ import { MessageCircle, CalendarDays } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { siteContent } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 
 interface HeroProps {
   videoEnabled?: boolean;
@@ -71,7 +72,7 @@ export function Hero({ videoEnabled = true }: HeroProps) {
           >
             <Button asChild size="lg" className="text-base">
               <a
-                href={siteContent.contact.whatsappLink}
+                href={getWhatsAppUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2"

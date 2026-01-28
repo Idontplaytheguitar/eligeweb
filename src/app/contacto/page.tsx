@@ -5,6 +5,7 @@ import { WhatsAppQR } from "@/components/contact/WhatsAppQR";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { siteContent } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Contacto",
@@ -94,10 +95,10 @@ export default function ContactoPage() {
                   Escaneá el código QR o hacé clic en el botón.
                 </p>
                 <div className="flex flex-col items-center gap-4">
-                  <WhatsAppQR whatsappLink={siteContent.contact.whatsappLink} />
+                  <WhatsAppQR whatsappLink={getWhatsAppUrl("Hola, estoy en la página de contacto y quisiera comunicarme con ustedes.")} />
                   <Button asChild className="w-full">
                     <a
-                      href={siteContent.contact.whatsappLink}
+                      href={getWhatsAppUrl("Hola, estoy en la página de contacto y quisiera comunicarme con ustedes.")}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2"

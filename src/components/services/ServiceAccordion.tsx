@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { siteContent } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 import type { ServiceItem } from "@/types";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -38,9 +39,9 @@ export function ServiceAccordion() {
             >
               <AccordionItem
                 value={service.id}
-                className="border rounded-lg px-4 bg-card shadow-sm"
+                className="group border rounded-lg px-4 bg-card shadow-sm"
               >
-                <AccordionTrigger className="hover:no-underline py-6">
+                <AccordionTrigger className="hover:no-underline group-data-[state=closed]:hover:bg-muted/40 rounded-lg transition-colors py-6 -mx-2 px-2 cursor-pointer">
                   <div className="flex items-center gap-4 text-left">
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       <Icon className="h-6 w-6 text-primary" />
@@ -89,7 +90,7 @@ export function ServiceAccordion() {
                     <div className="pt-2">
                       <Button asChild>
                         <a
-                          href={siteContent.contact.whatsappLink}
+                          href={getWhatsAppUrl(`Hola, quisiera consultar sobre ${service.title}.`)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-2"

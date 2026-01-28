@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CheckCircle, ArrowLeft, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { siteContent } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
   title: "Gracias por contactarnos",
@@ -39,7 +40,7 @@ export default function GraciasPage() {
             </Button>
             <Button asChild>
               <a
-                href={siteContent.contact.whatsappLink}
+                href={getWhatsAppUrl("Hola, acabo de enviar el formulario de contacto y quisiera seguir por WhatsApp.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2"

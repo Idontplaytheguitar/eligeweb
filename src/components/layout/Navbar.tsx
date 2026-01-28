@@ -9,6 +9,7 @@ import { Menu, MessageCircle, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { siteContent } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 import type { NavItem } from "@/types";
 
 export function Navbar() {
@@ -127,7 +128,7 @@ export function Navbar() {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button asChild>
               <a
-                href={siteContent.contact.whatsappLink}
+                href={getWhatsAppUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2"
@@ -195,7 +196,7 @@ export function Navbar() {
               </nav>
               <Button asChild className="mt-4">
                 <a
-                  href={siteContent.contact.whatsappLink}
+                  href={getWhatsAppUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2"

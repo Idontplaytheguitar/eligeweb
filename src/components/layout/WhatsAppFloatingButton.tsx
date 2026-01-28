@@ -2,12 +2,12 @@
 
 import { MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { siteContent } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 
 export function WhatsAppFloatingButton() {
   return (
     <motion.a
-      href={siteContent.contact.whatsappLink}
+      href={getWhatsAppUrl()}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:bg-[#20BA5C] transition-colors focus:outline-none focus:ring-2 focus:ring-[#25D366] focus:ring-offset-2"

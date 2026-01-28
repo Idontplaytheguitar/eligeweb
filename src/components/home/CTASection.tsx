@@ -4,6 +4,7 @@ import { MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { siteContent } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 
 export function CTASection() {
   return (
@@ -30,7 +31,7 @@ export function CTASection() {
               className="text-base font-semibold"
             >
               <a
-                href={siteContent.contact.whatsappLink}
+                href={getWhatsAppUrl("Hola, me interesa contactarlos. Quisiera más información.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2"
