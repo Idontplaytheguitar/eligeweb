@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
+  const [unseenCount, setUnseenCount] = useState(0);
 
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -33,6 +34,13 @@ export default function AdminPage() {
       });
       const data = await res.json();
       setIsAuthenticated(data.authenticated);
+
+      // Fetch unseen count if authenticated
+      if (data.authenticated) {
+        const countRes = await fetch("/api/admin/mensajes?action=count");
+        const countData = await countRes.json();
+        setUnseenCount(countData.unseenCount || 0);
+      }
     } catch {
       setIsAuthenticated(false);
     } finally {
@@ -372,10 +380,22 @@ export default function AdminPage() {
           <Link href="/admin/mensajes">
             <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors relative">
                   <Mail className="h-6 w-6 text-primary" />
+                  {unseenCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                      {unseenCount > 9 ? '9+' : unseenCount}
+                    </span>
+                  )}
                 </div>
-                <CardTitle>Consultas</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  Consultas
+                  {unseenCount > 0 && (
+                    <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">
+                      {unseenCount} nuevas
+                    </span>
+                  )}
+                </CardTitle>
                 <CardDescription>
                   Ver y responder consultas recibidas
                 </CardDescription>

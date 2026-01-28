@@ -76,6 +76,7 @@ model ContactMessage {
   preferWhatsApp Boolean  @default(false)
   area           String?
   message        String
+  seen           Boolean  @default(false)
   createdAt      DateTime @default(now())
 }
 

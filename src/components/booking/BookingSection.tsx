@@ -319,16 +319,40 @@ export function BookingSection() {
         <motion.div
           layout
           className={`grid ${fieldReqs.allowsScheduling ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-8 max-w-5xl mx-auto`}
-          transition={{ layout: { duration: 0.28, ease: "easeInOut" } }}
+          transition={{
+            layout: {
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+              mass: 0.8
+            }
+          }}
         >
           <AnimatePresence mode="popLayout">
             {fieldReqs.allowsScheduling && (
               <motion.div
                 key="calendar"
-                initial={{ opacity: 0, x: -24 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -24 }}
-                transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
+                initial={{ opacity: 0, x: -32, scale: 0.95 }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  scale: 1,
+                  transition: {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25,
+                    mass: 0.8
+                  }
+                }}
+                exit={{
+                  opacity: 0,
+                  x: -32,
+                  scale: 0.95,
+                  transition: {
+                    duration: 0.2,
+                    ease: [0.4, 0, 1, 1]
+                  }
+                }}
                 className="min-w-0"
               >
                 <Card>
@@ -447,6 +471,14 @@ export function BookingSection() {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
+            transition={{
+              layout: {
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+                mass: 0.8
+              }
+            }}
           >
             <Card>
               <CardContent className="pt-6">

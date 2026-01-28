@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppFloatingButton } from "@/components/layout/WhatsAppFloatingButton";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { Toaster } from "sonner";
 import { siteContent } from "@/content/site";
 import type { ServiceItem } from "@/types";
@@ -124,7 +125,9 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <Toaster position="top-right" richColors />
         <Navbar />
-        <main className="min-h-screen">{children}</main>
+        <main className="min-h-screen">
+          <PageTransition>{children}</PageTransition>
+        </main>
         <Footer />
         <WhatsAppFloatingButton />
       </body>

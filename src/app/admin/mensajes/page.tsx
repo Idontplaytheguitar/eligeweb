@@ -17,6 +17,7 @@ interface ContactMessage {
   whatsapp: string | null;
   area: string | null;
   message: string;
+  seen: boolean;
   createdAt: string;
 }
 

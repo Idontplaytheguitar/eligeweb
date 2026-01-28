@@ -192,24 +192,24 @@ export function BlogEditorWYSIWYG({ post, onSave, onCancel, isSaving }: BlogEdit
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAIMenu(!showAIMenu)}
-                disabled={isImproving}
-                className="gap-2"
-              >
-                {isImproving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
+            <span
+              title="próximamente"
+              className="inline-block opacity-50 cursor-not-allowed"
+            >
+              <div className="relative pointer-events-none">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  tabIndex={-1}
+                  className="gap-2"
+                  disabled
+                >
                   <Sparkles className="h-4 w-4" />
-                )}
-                Mejorar con IA
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-              {showAIMenu && (
+                  Mejorar con IA
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+                {showAIMenu && (
                 <div className="absolute right-0 mt-1 w-56 bg-background border rounded-lg shadow-lg z-20">
                   {aiActions.map((action: { id: AIAction; label: string; description: string }) => (
                     <button
@@ -225,7 +225,8 @@ export function BlogEditorWYSIWYG({ post, onSave, onCancel, isSaving }: BlogEdit
                   ))}
                 </div>
               )}
-            </div>
+              </div>
+            </span>
             <Button onClick={handleSave} disabled={isSaving} size="sm">
               {isSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
