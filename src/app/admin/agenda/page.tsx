@@ -250,7 +250,7 @@ export default function AdminAgendaPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
         <div className="flex gap-2 mb-6">
           <Button
             variant={activeTab === "meetings" ? "default" : "outline"}
@@ -392,7 +392,7 @@ export default function AdminAgendaPage() {
         )}
 
         {activeTab === "config" && (
-          <div className="space-y-6 max-w-3xl">
+          <div className="space-y-6 max-w-6xl">
             <Card>
               <CardHeader>
                 <CardTitle>Configuración general</CardTitle>

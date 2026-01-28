@@ -164,6 +164,8 @@ export function ScheduleEditor({
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
   const [newExceptionDate, setNewExceptionDate] = useState("");
   const gridRef = useRef<HTMLDivElement>(null);
+  const isPointerDownRef = useRef(false);
+  const suppressHoverUntilRef = useRef(0);
 
   const getScheduleMatrix = (dayOfWeek: number): boolean[] => {
     const schedule = recurring.find((r) => r.dayOfWeek === dayOfWeek);
@@ -189,6 +191,7 @@ export function ScheduleEditor({
   };
 
   const handleCellMouseDown = (dayOfWeek: number, slotIndex: number) => {
+    isPointerDownRef.current = true;
     setHoveredSlot(null);
     const matrix = getScheduleMatrix(dayOfWeek);
     const newValue = !matrix[slotIndex];
@@ -205,6 +208,9 @@ export function ScheduleEditor({
   };
 
   const handleMouseUp = () => {
+    isPointerDownRef.current = false;
+    setHoveredSlot(null);
+    suppressHoverUntilRef.current = Date.now() + 200;
     setIsDragging(false);
     setDragDay(null);
   };
@@ -402,14 +408,17 @@ export function ScheduleEditor({
                               aria-pressed={matrix[slotIndex]}
                               className={`rounded-sm transition-colors outline-none focus:outline-none focus-visible:ring-0 ${
                                 matrix[slotIndex] ? "bg-primary" : "bg-muted/50"
-                              } ${!isDragging && hoveredSlot?.dayOfWeek === day.id && hoveredSlot?.slotIndex === slotIndex ? "bg-muted" : ""}`}
+                              } ${!isDragging && hoveredSlot?.dayOfWeek === day.id && hoveredSlot?.slotIndex === slotIndex ? "bg-muted ring-2 ring-inset ring-primary/40" : ""}`}
                               onMouseDown={(e) => {
                                 e.preventDefault();
                                 handleCellMouseDown(day.id, slotIndex);
                               }}
                               onMouseEnter={() => {
-                                if (!isDragging) setHoveredSlot({ dayOfWeek: day.id, slotIndex });
-                                else if (dragDay === day.id) handleCellMouseEnter(day.id, slotIndex);
+                                if (isDragging && dragDay === day.id) handleCellMouseEnter(day.id, slotIndex);
+                                if (isPointerDownRef.current) return;
+                                const now = Date.now();
+                                if (now < suppressHoverUntilRef.current) return;
+                                setHoveredSlot({ dayOfWeek: day.id, slotIndex });
                               }}
                               onMouseLeave={() => {
                                 if (!isDragging) setHoveredSlot(null);
@@ -421,14 +430,17 @@ export function ScheduleEditor({
                               aria-pressed={matrix[slotIndex + 1]}
                               className={`rounded-sm transition-colors outline-none focus:outline-none focus-visible:ring-0 ${
                                 matrix[slotIndex + 1] ? "bg-primary" : "bg-muted/50"
-                              } ${!isDragging && hoveredSlot?.dayOfWeek === day.id && hoveredSlot?.slotIndex === slotIndex + 1 ? "bg-muted" : ""}`}
+                              } ${!isDragging && hoveredSlot?.dayOfWeek === day.id && hoveredSlot?.slotIndex === slotIndex + 1 ? "bg-muted ring-2 ring-inset ring-primary/40" : ""}`}
                               onMouseDown={(e) => {
                                 e.preventDefault();
                                 handleCellMouseDown(day.id, slotIndex + 1);
                               }}
                               onMouseEnter={() => {
-                                if (!isDragging) setHoveredSlot({ dayOfWeek: day.id, slotIndex: slotIndex + 1 });
-                                else if (dragDay === day.id) handleCellMouseEnter(day.id, slotIndex + 1);
+                                if (isDragging && dragDay === day.id) handleCellMouseEnter(day.id, slotIndex + 1);
+                                if (isPointerDownRef.current) return;
+                                const now = Date.now();
+                                if (now < suppressHoverUntilRef.current) return;
+                                setHoveredSlot({ dayOfWeek: day.id, slotIndex: slotIndex + 1 });
                               }}
                               onMouseLeave={() => {
                                 if (!isDragging) setHoveredSlot(null);
