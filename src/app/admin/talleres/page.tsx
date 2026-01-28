@@ -271,29 +271,11 @@ export default function AdminTalleresPage() {
                     )}
                   </CldUploadWidget>
                 ) : null}
-                {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
-                  <Input
-                    value={currentWorkshop?.coverImage || ""}
-                    onChange={(e) =>
-                      setCurrentWorkshop({ ...currentWorkshop, coverImage: e.target.value })
-                    }
-                    placeholder="O pegá una URL"
-                    className="max-w-md"
-                  />
-                ) : (
-                  <>
-                    <Input
-                      value={currentWorkshop?.coverImage || ""}
-                      onChange={(e) =>
-                        setCurrentWorkshop({ ...currentWorkshop, coverImage: e.target.value })
-                      }
-                      placeholder="https://ejemplo.com/imagen.jpg"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Pegá la URL. Para subir desde el equipo, configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET. En Vercel: Settings → Environment Variables, agregá esas variables y volvé a desplegar.
-                    </p>
-                  </>
-                )}
+                {!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
+                  <p className="text-sm text-muted-foreground">
+                    Configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET para poder subir la imagen de portada (en Vercel: Settings → Environment Variables, y volvé a desplegar).
+                  </p>
+                ) : null}
               </div>
             </div>
 

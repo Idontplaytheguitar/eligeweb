@@ -6,11 +6,13 @@ import { OurSpace } from "@/components/home/OurSpace";
 import { Testimonials } from "@/components/home/Testimonials";
 import { FAQ } from "@/components/home/FAQ";
 import { CTASection } from "@/components/home/CTASection";
+import { getSiteContent } from "@/lib/content";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await getSiteContent();
   return (
     <>
-      <Hero />
+      <Hero videoEnabled={content.heroVideoEnabled} />
       <ServicesGrid />
       <WhyChooseUs />
       <ProcessSteps />

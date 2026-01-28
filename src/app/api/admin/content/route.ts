@@ -46,6 +46,7 @@ export async function GET() {
     // Parsear los campos JSON
     const parsedContent = {
       ...content,
+      heroVideoEnabled: content.heroVideoEnabled ?? true,
       aboutBio: JSON.parse(content.aboutBio),
       aboutTimeline: JSON.parse(content.aboutTimeline),
       services: JSON.parse(content.services),
@@ -73,6 +74,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const data = await req.json();
+    if (typeof data.heroVideoEnabled !== "boolean") {
+      data.heroVideoEnabled = true;
+    }
 
     // Validar que los campos JSON sean válidos
     const jsonFields = [
@@ -107,6 +111,7 @@ export async function POST(req: NextRequest) {
         id: "main",
         heroTitle: processedData.heroTitle || "",
         heroSubtitle: processedData.heroSubtitle || "",
+        heroVideoEnabled: processedData.heroVideoEnabled !== false,
         aboutName: processedData.aboutName || "",
         aboutRole: processedData.aboutRole || "",
         aboutImage: processedData.aboutImage || "",

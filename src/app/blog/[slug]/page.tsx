@@ -55,7 +55,7 @@ export default async function BlogPostPage({ params }: Props) {
     <>
       <article className="section-padding bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4 md:px-6 max-w-4xl">
-          <Button variant="ghost" asChild className="mb-8">
+          <Button variant="ghost" asChild className={post.coverImage ? "mb-8" : "mb-6"}>
             <Link href="/blog">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver al blog
@@ -74,7 +74,7 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
           )}
 
-          <header className="mb-8">
+          <header className={`mb-8 ${!post.coverImage ? "border-b border-border pb-6" : ""}`}>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
               {post.title}
             </h1>

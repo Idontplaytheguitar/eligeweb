@@ -197,29 +197,11 @@ export function BlogEditor({ post, onSave, onCancel, isSaving }: BlogEditorProps
                   )}
                 </CldUploadWidget>
               ) : null}
-              {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
-                <Input
-                  value={currentPost.coverImage || ""}
-                  onChange={(e) =>
-                    setCurrentPost({ ...currentPost, coverImage: e.target.value })
-                  }
-                  placeholder="O pegá una URL"
-                  className="max-w-md"
-                />
-              ) : (
-                <>
-                  <Input
-                    value={currentPost.coverImage || ""}
-                    onChange={(e) =>
-                      setCurrentPost({ ...currentPost, coverImage: e.target.value })
-                    }
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Pegá la URL. Para subir desde el equipo, configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET. En Vercel: Settings → Environment Variables, agregá esas variables y volvé a desplegar.
-                  </p>
-                </>
-              )}
+              {!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
+                <p className="text-sm text-muted-foreground">
+                  Configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET para poder subir la imagen de portada (en Vercel: Settings → Environment Variables, y volvé a desplegar).
+                </p>
+              ) : null}
             </div>
 
             <div className="space-y-2">

@@ -4,6 +4,7 @@ import { siteContent } from "@/content/site";
 export interface SiteContentData {
   heroTitle: string;
   heroSubtitle: string;
+  heroVideoEnabled: boolean;
   aboutName: string;
   aboutRole: string;
   aboutImage: string;
@@ -42,6 +43,7 @@ export async function getSiteContent(): Promise<SiteContentData> {
       return {
         heroTitle: content.heroTitle,
         heroSubtitle: content.heroSubtitle,
+        heroVideoEnabled: content.heroVideoEnabled ?? true,
         aboutName: content.aboutName,
         aboutRole: content.aboutRole,
         aboutImage: content.aboutImage,
@@ -73,6 +75,7 @@ export async function getSiteContent(): Promise<SiteContentData> {
   return {
     heroTitle: siteContent.hero.title,
     heroSubtitle: siteContent.hero.subtitle,
+    heroVideoEnabled: true,
     aboutName: "Dra. Aldana García Eldik",
     aboutRole: "Abogada - Fundadora de ELIGE",
     aboutImage: "/EstudioFrentePerfil.jpeg",

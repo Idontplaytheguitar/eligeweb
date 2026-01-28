@@ -34,6 +34,7 @@ type TabId = "hero" | "about" | "services" | "testimonials" | "faqs" | "whychoos
 interface SiteContent {
   heroTitle: string;
   heroSubtitle: string;
+  heroVideoEnabled: boolean;
   aboutName: string;
   aboutRole: string;
   aboutImage: string;
@@ -301,6 +302,7 @@ export default function AdminContenidoPage() {
 
 // Hero Tab Component
 function HeroTab({ content, updateContent }: { content: SiteContent; updateContent: (u: Partial<SiteContent>) => void }) {
+  const videoEnabled = content.heroVideoEnabled !== false;
   return (
     <Card>
       <CardHeader>
@@ -310,6 +312,26 @@ function HeroTab({ content, updateContent }: { content: SiteContent; updateConte
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div>
+            <p className="font-medium">Video de fondo en el hero</p>
+            <p className="text-sm text-muted-foreground">
+              Activar o desactivar el video que se muestra detrás del título en la portada
+            </p>
+          </div>
+          <label className="relative inline-flex cursor-pointer items-center">
+            <input
+              type="checkbox"
+              checked={videoEnabled}
+              onChange={(e) => updateContent({ heroVideoEnabled: e.target.checked })}
+              className="peer sr-only"
+            />
+            <div className="peer h-6 w-11 rounded-full bg-muted after:absolute after:left-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-muted-foreground/20 after:bg-background after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-primary peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20" />
+            <span className="ml-3 text-sm font-medium">
+              {videoEnabled ? "Activado" : "Desactivado"}
+            </span>
+          </label>
+        </div>
         <div>
           <label className="block text-sm font-medium mb-2">Título principal</label>
           <Input
@@ -436,28 +458,9 @@ function AboutTab({ content, updateContent }: { content: SiteContent; updateCont
                 )}
               </CldUploadWidget>
             ) : (
-              <>
-                {content.aboutImage && (
-                  <div className="mb-3 relative w-48 h-48 rounded-lg overflow-hidden border">
-                    <Image
-                      src={content.aboutImage}
-                      alt="Preview"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-                <Input
-                  type="url"
-                  value={content.aboutImage ?? ""}
-                  onChange={(e) => updateContent({ aboutImage: e.target.value || "" })}
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                  className="mb-2"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Pegá la URL de la imagen. Para subir desde el equipo, configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET en el entorno. En Vercel: Settings → Environment Variables, agregá esas variables y volvé a desplegar.
-                </p>
-              </>
+              <p className="text-sm text-muted-foreground">
+                Para subir la imagen de perfil, configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET (en Vercel: Settings → Environment Variables) y volvé a desplegar.
+              </p>
             )}
           </div>
           <div>

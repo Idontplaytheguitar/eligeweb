@@ -59,7 +59,7 @@ export default async function BlogPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {posts.map((post: { id: string; slug: string; title: string; excerpt: string | null; coverImage: string | null; publishedAt: Date | null }) => (
                 <Link key={post.id} href={`/blog/${post.slug}`}>
-                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group overflow-hidden">
+                  <Card className={`h-full hover:shadow-lg transition-shadow cursor-pointer group overflow-hidden ${!post.coverImage ? "border-t-4 border-primary pt-6" : ""}`}>
                     {post.coverImage && (
                       <div className="aspect-video relative overflow-hidden">
                         <Image
@@ -70,7 +70,7 @@ export default async function BlogPage() {
                         />
                       </div>
                     )}
-                    <CardHeader>
+                    <CardHeader className={!post.coverImage ? "pt-0" : undefined}>
                       <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2">
                         {post.title}
                       </CardTitle>

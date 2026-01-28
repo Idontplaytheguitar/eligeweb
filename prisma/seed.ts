@@ -15,6 +15,7 @@ async function main() {
       heroTitle: "Asesoramiento legal claro, estratégico y humano.",
       heroSubtitle:
         "Defendemos tus derechos con empatía y profesionalismo. Más de 10 años de experiencia nos respaldan.",
+      heroVideoEnabled: true,
       // Quién Soy
       aboutName: "Dra. Aldana García Eldik",
       aboutRole: "Abogada - Fundadora de ELIGE",

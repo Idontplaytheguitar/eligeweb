@@ -105,10 +105,11 @@ model BookingConfig {
 }
 
 model SiteContent {
-  id              String   @id @default("main")
+  id                 String   @id @default("main")
   // Hero
-  heroTitle       String   @db.Text
-  heroSubtitle    String   @db.Text
+  heroTitle          String   @db.Text
+  heroSubtitle       String   @db.Text
+  heroVideoEnabled   Boolean  @default(true)
   // Quién Soy
   aboutName       String
   aboutRole       String

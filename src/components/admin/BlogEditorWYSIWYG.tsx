@@ -304,28 +304,10 @@ export function BlogEditorWYSIWYG({ post, onSave, onCancel, isSaving }: BlogEdit
               </CldUploadWidget>
             ) : null}
             {!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
-              <div className="space-y-2">
-                <Input
-                  value={currentPost.coverImage || ""}
-                  onChange={(e) =>
-                    setCurrentPost({ ...currentPost, coverImage: e.target.value })
-                  }
-                  placeholder="https://ejemplo.com/imagen.jpg o /imagen-local.jpg"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Pegá la URL. Para subir desde el equipo, configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET. En Vercel: Settings → Environment Variables, agregá esas variables y volvé a desplegar.
-                </p>
-              </div>
-            ) : (
-              <Input
-                value={currentPost.coverImage || ""}
-                onChange={(e) =>
-                  setCurrentPost({ ...currentPost, coverImage: e.target.value })
-                }
-                placeholder="O pegá una URL"
-                className="max-w-md"
-              />
-            )}
+              <p className="text-sm text-muted-foreground">
+                Configurá NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME y NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET para poder subir la imagen de portada (en Vercel: Settings → Environment Variables, y volvé a desplegar).
+              </p>
+            ) : null}
           </div>
 
           {aiError && (
@@ -502,22 +484,6 @@ export function BlogEditorWYSIWYG({ post, onSave, onCancel, isSaving }: BlogEdit
               {/* Image Input */}
               {showImageInput && (
                 <div className="border-b p-3 bg-muted/50 flex flex-wrap items-center gap-2">
-                  <Input
-                    type="url"
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addImage();
-                      }
-                    }}
-                    className="max-w-xs"
-                  />
-                  <Button type="button" size="sm" onClick={() => addImage()}>
-                    Agregar
-                  </Button>
                   {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
                     <CldUploadWidget
                       uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "estudioelige"}
@@ -532,7 +498,11 @@ export function BlogEditorWYSIWYG({ post, onSave, onCancel, isSaving }: BlogEdit
                         </Button>
                       )}
                     </CldUploadWidget>
-                  ) : null}
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Configurá Cloudinary para insertar imágenes.
+                    </p>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
