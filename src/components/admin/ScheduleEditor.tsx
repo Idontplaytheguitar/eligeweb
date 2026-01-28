@@ -67,6 +67,89 @@ function matrixToSlots(matrix: boolean[]): TimeSlot[] {
   return slots;
 }
 
+interface BlockingEditorProps {
+  recurringSlots: TimeSlot[];
+  blockedSlots: TimeSlot[];
+  onChange: (blocked: TimeSlot[]) => void;
+}
+
+function BlockingEditor({ recurringSlots, blockedSlots, onChange }: BlockingEditorProps) {
+  const recurringMatrix = slotsToMatrix(recurringSlots);
+  const [blockedMatrix, setBlockedMatrix] = useState<boolean[]>(() => slotsToMatrix(blockedSlots));
+
+  useEffect(() => {
+    setBlockedMatrix(slotsToMatrix(blockedSlots));
+  }, [blockedSlots]);
+
+  const toggle = (slotIndex: number) => {
+    if (!recurringMatrix[slotIndex]) return;
+    const next = [...blockedMatrix];
+    next[slotIndex] = !next[slotIndex];
+    setBlockedMatrix(next);
+    onChange(matrixToSlots(next));
+  };
+
+  const clearAll = () => {
+    const next = new Array(28).fill(false);
+    setBlockedMatrix(next);
+    onChange([]);
+  };
+
+  const activeIndices = recurringMatrix
+    .map((v, i) => (v ? i : -1))
+    .filter((i) => i >= 0);
+
+  if (activeIndices.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground py-3">
+        No hay horarios laborables configurados para este día
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 pt-2">
+      <p className="text-xs text-muted-foreground">
+        Tocá los horarios que querés bloquear (se pondrán rojos)
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {activeIndices.map((slotIndex) => {
+          const isBlocked = blockedMatrix[slotIndex];
+          const time = slotIndexToTime(slotIndex);
+          return (
+            <button
+              key={slotIndex}
+              type="button"
+              onClick={() => toggle(slotIndex)}
+              className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                isBlocked
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : "bg-primary/20 text-primary hover:bg-primary/30"
+              }`}
+            >
+              {time}
+            </button>
+          );
+        })}
+      </div>
+      {blockedSlots.length > 0 && (
+        <Button variant="ghost" size="sm" onClick={clearAll} className="text-destructive text-xs h-8">
+          <Trash2 className="w-3 h-3 mr-1" />
+          Quitar bloqueos
+        </Button>
+      )}
+      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground pt-1 border-t">
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 bg-primary/50 rounded" /> Trabajando
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 bg-destructive rounded" /> Bloqueado
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function ScheduleEditor({
   recurring,
   exceptions,
@@ -77,6 +160,7 @@ export function ScheduleEditor({
   const [isDragging, setIsDragging] = useState(false);
   const [dragValue, setDragValue] = useState(true);
   const [dragDay, setDragDay] = useState<number | null>(null);
+  const [hoveredSlot, setHoveredSlot] = useState<{ dayOfWeek: number; slotIndex: number } | null>(null);
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
   const [newExceptionDate, setNewExceptionDate] = useState("");
   const gridRef = useRef<HTMLDivElement>(null);
@@ -84,6 +168,11 @@ export function ScheduleEditor({
   const getScheduleMatrix = (dayOfWeek: number): boolean[] => {
     const schedule = recurring.find((r) => r.dayOfWeek === dayOfWeek);
     return schedule ? slotsToMatrix(schedule.slots) : new Array(28).fill(false);
+  };
+
+  const getDaySchedule = (dayOfWeek: number): TimeSlot[] => {
+    const schedule = recurring.find((r) => r.dayOfWeek === dayOfWeek);
+    return schedule?.slots ?? [];
   };
 
   const toggleSlot = (dayOfWeek: number, slotIndex: number, forceValue?: boolean) => {
@@ -99,28 +188,14 @@ export function ScheduleEditor({
     }
   };
 
-  const handleCellMouseDown = (dayOfWeek: number, slotIndex: number, setBothHalves = false) => {
+  const handleCellMouseDown = (dayOfWeek: number, slotIndex: number) => {
+    setHoveredSlot(null);
     const matrix = getScheduleMatrix(dayOfWeek);
-    const newValue = setBothHalves
-      ? !(matrix[slotIndex] && matrix[slotIndex + 1])
-      : !matrix[slotIndex];
+    const newValue = !matrix[slotIndex];
     setIsDragging(true);
     setDragValue(newValue);
     setDragDay(dayOfWeek);
-    if (setBothHalves) {
-      const m = [...matrix];
-      m[slotIndex] = newValue;
-      m[slotIndex + 1] = newValue;
-      const newSlots = matrixToSlots(m);
-      const existing = recurring.filter((r) => r.dayOfWeek !== dayOfWeek);
-      if (newSlots.length > 0) {
-        onUpdateRecurring([...existing, { dayOfWeek, slots: newSlots }]);
-      } else {
-        onUpdateRecurring(existing);
-      }
-    } else {
-      toggleSlot(dayOfWeek, slotIndex, newValue);
-    }
+    toggleSlot(dayOfWeek, slotIndex, newValue);
   };
 
   const handleCellMouseEnter = (dayOfWeek: number, slotIndex: number) => {
@@ -134,9 +209,12 @@ export function ScheduleEditor({
     setDragDay(null);
   };
 
+  const mouseUpRef = useRef(handleMouseUp);
+  mouseUpRef.current = handleMouseUp;
   useEffect(() => {
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => window.removeEventListener("mouseup", handleMouseUp);
+    const up = () => mouseUpRef.current();
+    window.addEventListener("mouseup", up);
+    return () => window.removeEventListener("mouseup", up);
   }, []);
 
   const copyToAllWeekdays = (sourceDayOfWeek: number) => {
@@ -219,7 +297,7 @@ export function ScheduleEditor({
   const addException = () => {
     if (!newExceptionDate) return;
     if (exceptions.find((e) => e.date === newExceptionDate)) return;
-    onUpdateExceptions([...exceptions, { date: newExceptionDate, slots: [], isBlocked: true }]);
+    onUpdateExceptions([...exceptions, { date: newExceptionDate, slots: [], isBlocked: false }]);
     setNewExceptionDate("");
   };
 
@@ -279,8 +357,14 @@ export function ScheduleEditor({
           <div className="hidden md:block overflow-x-auto">
             <div
               ref={gridRef}
-              className="min-w-[700px] select-none"
-              onMouseLeave={() => setIsDragging(false)}
+              className="min-w-[700px] select-none outline-none"
+              tabIndex={-1}
+              data-dragging={isDragging}
+              onMouseLeave={() => {
+                handleMouseUp();
+                setHoveredSlot(null);
+              }}
+              onMouseUp={handleMouseUp}
             >
               <div className="grid grid-cols-8 gap-px bg-border rounded-xl overflow-hidden border">
                 <div className="bg-muted/50 p-2 rounded-tl-xl" />
@@ -310,28 +394,45 @@ export function ScheduleEditor({
                           className={`bg-background p-0.5 cursor-pointer transition-colors border-b border-r border-muted/50 last:border-r-0 ${
                             isFullHour ? "bg-primary/20" : isActive ? "bg-primary/10" : ""
                           }`}
-                          onMouseDown={() => handleCellMouseDown(day.id, slotIndex, true)}
-                          onMouseEnter={() => {
-                            if (isDragging) {
-                              handleCellMouseEnter(day.id, slotIndex);
-                              handleCellMouseEnter(day.id, slotIndex + 1);
-                            }
-                          }}
                         >
                           <div className="grid grid-rows-2 gap-px h-8">
                             <div
-                              className={`rounded-sm transition-colors ${
-                                matrix[slotIndex]
-                                  ? "bg-primary"
-                                  : "bg-muted/50 hover:bg-muted"
-                              }`}
+                              role="button"
+                              tabIndex={-1}
+                              aria-pressed={matrix[slotIndex]}
+                              className={`rounded-sm transition-colors outline-none focus:outline-none focus-visible:ring-0 ${
+                                matrix[slotIndex] ? "bg-primary" : "bg-muted/50"
+                              } ${!isDragging && hoveredSlot?.dayOfWeek === day.id && hoveredSlot?.slotIndex === slotIndex ? "bg-muted" : ""}`}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleCellMouseDown(day.id, slotIndex);
+                              }}
+                              onMouseEnter={() => {
+                                if (!isDragging) setHoveredSlot({ dayOfWeek: day.id, slotIndex });
+                                else if (dragDay === day.id) handleCellMouseEnter(day.id, slotIndex);
+                              }}
+                              onMouseLeave={() => {
+                                if (!isDragging) setHoveredSlot(null);
+                              }}
                             />
                             <div
-                              className={`rounded-sm transition-colors ${
-                                matrix[slotIndex + 1]
-                                  ? "bg-primary"
-                                  : "bg-muted/50 hover:bg-muted"
-                              }`}
+                              role="button"
+                              tabIndex={-1}
+                              aria-pressed={matrix[slotIndex + 1]}
+                              className={`rounded-sm transition-colors outline-none focus:outline-none focus-visible:ring-0 ${
+                                matrix[slotIndex + 1] ? "bg-primary" : "bg-muted/50"
+                              } ${!isDragging && hoveredSlot?.dayOfWeek === day.id && hoveredSlot?.slotIndex === slotIndex + 1 ? "bg-muted" : ""}`}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleCellMouseDown(day.id, slotIndex + 1);
+                              }}
+                              onMouseEnter={() => {
+                                if (!isDragging) setHoveredSlot({ dayOfWeek: day.id, slotIndex: slotIndex + 1 });
+                                else if (dragDay === day.id) handleCellMouseEnter(day.id, slotIndex + 1);
+                              }}
+                              onMouseLeave={() => {
+                                if (!isDragging) setHoveredSlot(null);
+                              }}
                             />
                           </div>
                         </div>
@@ -536,7 +637,7 @@ export function ScheduleEditor({
       {viewMode === "exceptions" && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Agregá días especiales donde no estarás disponible (feriados, vacaciones, etc.)
+            Agregá días especiales donde el horario sea diferente al habitual (feriados, vacaciones, horarios especiales). En los días laborables, seleccioná las horas que <strong>no</strong> vas a trabajar para bloquearlas.
           </p>
 
           <div className="flex gap-3">
@@ -554,7 +655,7 @@ export function ScheduleEditor({
           </div>
 
           {exceptions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground border rounded-lg">
+            <div className="text-center py-8 text-muted-foreground border rounded-xl border-border">
               No hay días especiales configurados
             </div>
           ) : (
@@ -563,25 +664,35 @@ export function ScheduleEditor({
                 .sort((a, b) => a.date.localeCompare(b.date))
                 .map((exception) => {
                   const dateObj = new Date(exception.date + "T12:00:00");
+                  const dayOfWeek = dateObj.getDay();
+                  const recurringSlots = getDaySchedule(dayOfWeek);
+                  const dayName = DAYS_GRID.find((d) => d.id === dayOfWeek)?.name?.toLowerCase() ?? "este día";
 
                   return (
                     <div
                       key={exception.date}
-                      className={`p-4 rounded-lg border ${
+                      className={`rounded-xl border overflow-hidden ${
                         exception.isBlocked
                           ? "border-destructive/30 bg-destructive/5"
-                          : "border-primary/30 bg-primary/5"
+                          : "border-primary/20 bg-muted/30"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">
-                          {dateObj.toLocaleDateString("es-AR", {
-                            weekday: "long",
-                            day: "numeric",
-                            month: "long",
-                          })}
-                        </span>
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-2 border-b border-border">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                          <span className="font-medium capitalize">
+                            {dateObj.toLocaleDateString("es-AR", {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                            })}
+                          </span>
+                          {recurringSlots.length === 0 && !exception.isBlocked && (
+                            <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200 px-2 py-0.5 rounded w-fit">
+                              Sin horario recurrente
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
                           <label className="flex items-center gap-2 text-sm cursor-pointer">
                             <input
                               type="checkbox"
@@ -589,22 +700,37 @@ export function ScheduleEditor({
                               onChange={(e) =>
                                 updateException(exception.date, {
                                   isBlocked: e.target.checked,
-                                  slots: [],
+                                  slots: e.target.checked ? [] : exception.slots,
                                 })
                               }
-                              className="rounded"
+                              className="rounded border-input"
                             />
-                            <span className="text-destructive">No disponible</span>
+                            <span className="text-destructive">No laborable</span>
                           </label>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => removeException(exception.date)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
                             <X className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
+                      {!exception.isBlocked && recurringSlots.length > 0 && (
+                        <div className="p-3">
+                          <BlockingEditor
+                            recurringSlots={recurringSlots}
+                            blockedSlots={exception.slots}
+                            onChange={(slots) => updateException(exception.date, { slots })}
+                          />
+                        </div>
+                      )}
+                      {!exception.isBlocked && recurringSlots.length === 0 && (
+                        <div className="p-3 text-sm text-muted-foreground">
+                          Este día no tiene horario recurrente configurado. Configurá primero el horario semanal para {dayName}.
+                        </div>
+                      )}
                     </div>
                   );
                 })}

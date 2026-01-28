@@ -66,6 +66,14 @@ export function generateTimeSlots(
   return slots;
 }
 
+/** Returns true if time (HH:mm) falls inside [block.start, block.end). */
+function isTimeInRange(time: string, block: TimeSlot): boolean {
+  const min = parseTime(time);
+  const start = parseTime(block.start);
+  const end = parseTime(block.end);
+  return min >= start && min < end;
+}
+
 export function getAvailableSlotsForDate(
   date: string,
   config: BookingConfigData,
@@ -76,26 +84,35 @@ export function getAvailableSlotsForDate(
 
   const exception = config.exceptions.find((e) => e.date === date);
 
-  let timeRanges: TimeSlot[] = [];
+  let allSlots: string[] = [];
 
   if (exception) {
     if (exception.isBlocked) {
       return [];
     }
-    timeRanges = exception.slots;
+    const recurring = config.recurring.find((r) => r.dayOfWeek === dayOfWeek);
+    if (!recurring || recurring.slots.length === 0) {
+      return [];
+    }
+    for (const range of recurring.slots) {
+      allSlots.push(
+        ...generateTimeSlots(range.start, range.end, config.meetingDuration)
+      );
+    }
+    const blocked = exception.slots;
+    allSlots = allSlots.filter(
+      (startTime) => !blocked.some((b) => isTimeInRange(startTime, b))
+    );
   } else {
     const recurring = config.recurring.find((r) => r.dayOfWeek === dayOfWeek);
     if (!recurring) {
       return [];
     }
-    timeRanges = recurring.slots;
-  }
-
-  const allSlots: string[] = [];
-
-  for (const range of timeRanges) {
-    const slots = generateTimeSlots(range.start, range.end, config.meetingDuration);
-    allSlots.push(...slots);
+    for (const range of recurring.slots) {
+      allSlots.push(
+        ...generateTimeSlots(range.start, range.end, config.meetingDuration)
+      );
+    }
   }
 
   return allSlots.filter((slot) => !bookedTimes.includes(slot));
@@ -115,7 +132,11 @@ export function isDateAvailable(
 
   const exception = config.exceptions.find((e) => e.date === dateStr);
   if (exception) {
-    return !exception.isBlocked && exception.slots.length > 0;
+    if (exception.isBlocked) return false;
+    const recurring = config.recurring.find((r) => r.dayOfWeek === dayOfWeek);
+    if (!recurring || recurring.slots.length === 0) return false;
+    const slots = getAvailableSlotsForDate(dateStr, config, []);
+    return slots.length > 0;
   }
 
   const recurring = config.recurring.find((r) => r.dayOfWeek === dayOfWeek);
