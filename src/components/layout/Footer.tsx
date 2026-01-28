@@ -12,7 +12,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           <div className="space-y-4">
             <Image
-              src="/brand/elige-logo-transparent.png"
+              src="/Logo.png"
               alt={siteContent.fullName}
               width={140}
               height={50}

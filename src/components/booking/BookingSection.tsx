@@ -79,7 +79,7 @@ function getFieldRequirements(meetingType: string): FieldRequirements {
         requiresPhone: true,
         phoneOrEmailRequired: false,
         allowsScheduling: true,
-        showEmail: false,
+        showEmail: true, // Show but not required
         showPhone: true,
       };
     case 'presencial':
@@ -483,12 +483,13 @@ export function BookingSection() {
             <Card>
               <CardContent className="pt-6">
                 <h3 className="text-lg font-semibold mb-4">Tipo de reunión</h3>
-                
-                <div className="grid grid-cols-2 gap-3 mb-6">
+
+                <motion.div layout className="grid grid-cols-2 gap-3 mb-6">
                   {MEETING_TYPES.map((type) => {
                     const Icon = type.icon;
                     return (
-                      <button
+                      <motion.button
+                        layout
                         key={type.id}
                         onClick={() => setMeetingType(type.id)}
                         className={`p-4 rounded-lg border-2 transition-all text-left ${
@@ -496,6 +497,11 @@ export function BookingSection() {
                             ? "border-primary bg-primary/5"
                             : "border-border hover:border-primary/50"
                         }`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{
+                          layout: { type: "spring", stiffness: 300, damping: 30 }
+                        }}
                       >
                         <Icon className={`w-5 h-5 mb-2 ${
                           meetingType === type.id ? "text-primary" : "text-muted-foreground"
@@ -504,15 +510,18 @@ export function BookingSection() {
                         <div className="text-xs text-muted-foreground mt-1">
                           {type.description}
                         </div>
-                      </button>
+                      </motion.button>
                     );
                   })}
-                </div>
+                </motion.div>
 
                 <h3 className="text-lg font-semibold mb-4">Completá tus datos</h3>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
+                  <motion.div
+                    layout
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
                     <label className="block text-sm font-medium mb-2">
                       Nombre completo *
                     </label>
@@ -522,39 +531,44 @@ export function BookingSection() {
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Tu nombre"
                     />
-                  </div>
+                  </motion.div>
 
-                  {fieldReqs.showEmail && (
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Email {fieldReqs.requiresEmail ? '*' : fieldReqs.phoneOrEmailRequired ? '(email o teléfono requerido)' : <span className="text-muted-foreground">(opcional)</span>}
-                      </label>
-                      <Input
-                        type="email"
-                        required={fieldReqs.requiresEmail}
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="tu@email.com"
-                      />
-                    </div>
-                  )}
+                  <motion.div
+                    layout
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
+                    <label className="block text-sm font-medium mb-2">
+                      Email {fieldReqs.requiresEmail ? '*' : fieldReqs.phoneOrEmailRequired ? '(email o teléfono requerido)' : <span className="text-muted-foreground">(opcional)</span>}
+                    </label>
+                    <Input
+                      type="email"
+                      required={fieldReqs.requiresEmail}
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="tu@email.com"
+                    />
+                  </motion.div>
 
-                  {fieldReqs.showPhone && (
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Teléfono {fieldReqs.requiresPhone ? '*' : fieldReqs.phoneOrEmailRequired ? '(email o teléfono requerido)' : <span className="text-muted-foreground">(opcional)</span>}
-                      </label>
-                      <Input
-                        type="tel"
-                        required={fieldReqs.requiresPhone}
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="+54 11 1234-5678"
-                      />
-                    </div>
-                  )}
+                  <motion.div
+                    layout
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
+                    <label className="block text-sm font-medium mb-2">
+                      Teléfono {fieldReqs.requiresPhone ? '*' : fieldReqs.phoneOrEmailRequired ? '(email o teléfono requerido)' : <span className="text-muted-foreground">(opcional)</span>}
+                    </label>
+                    <Input
+                      type="tel"
+                      required={fieldReqs.requiresPhone}
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="+54 11 1234-5678"
+                    />
+                  </motion.div>
 
-                  <div>
+                  <motion.div
+                    layout
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
                     <label className="block text-sm font-medium mb-2">
                       ¿En qué podemos ayudarte?
                     </label>
@@ -564,7 +578,7 @@ export function BookingSection() {
                       placeholder="Contanos brevemente tu consulta..."
                       rows={3}
                     />
-                  </div>
+                  </motion.div>
 
                   {validationError && (
                     <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
