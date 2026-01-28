@@ -369,19 +369,6 @@ export default function AdminPage() {
             </Card>
           </Link>
 
-          {/* DISABLED: Talleres not ready for production yet */}
-          <Card className="h-full opacity-50 cursor-not-allowed">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mb-4">
-                <GraduationCap className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <CardTitle className="text-muted-foreground">Talleres</CardTitle>
-              <CardDescription>
-                Próximamente disponible
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
           <Link href="/admin/mensajes">
             <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
               <CardHeader>
@@ -409,6 +396,19 @@ export default function AdminPage() {
               </CardHeader>
             </Card>
           </Link>
+
+          {/* DISABLED: Talleres not ready for production yet — al final, gris, ruta no accesible */}
+          <Card className="h-full opacity-50 cursor-not-allowed">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mb-4">
+                <GraduationCap className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <CardTitle className="text-muted-foreground">Talleres</CardTitle>
+              <CardDescription>
+                Próximamente disponible
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </div>
       </div>
     </div>
