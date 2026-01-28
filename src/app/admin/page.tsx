@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, LogOut, FileText, GraduationCap, Mail, Key, Calendar, Layout } from "lucide-react";
+import { Loader2, LogOut, FileText, GraduationCap, Mail, Key, Calendar, Layout, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,9 @@ export default function AdminPage() {
   const [unseenCount, setUnseenCount] = useState(0);
 
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [adminEmailConfigured, setAdminEmailConfigured] = useState<boolean | null>(null);
   const [otpSent, setOtpSent] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [otpEmail, setOtpEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -51,6 +53,25 @@ export default function AdminPage() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    if (!showChangePassword || !isAuthenticated) {
+      if (!showChangePassword) setAdminEmailConfigured(null);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/admin/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setAdminEmailConfigured(data.adminEmail != null && data.adminEmail !== "");
+      })
+      .catch(() => {
+        if (!cancelled) setAdminEmailConfigured(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showChangePassword, isAuthenticated]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,12 +131,19 @@ export default function AdminPage() {
       setOtpSent(true);
       setOtpEmail(data.email);
       setChangePasswordMessage(`Código enviado a ${data.email}`);
+      setResendCooldown(30);
     } catch {
       setChangePasswordMessage("Error de conexión");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setInterval(() => setResendCooldown((s) => (s <= 1 ? 0 : s - 1)), 1000);
+    return () => clearInterval(t);
+  }, [resendCooldown]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +178,7 @@ export default function AdminPage() {
       setChangePasswordMessage("Contraseña cambiada exitosamente");
       setShowChangePassword(false);
       setOtpSent(false);
+      setResendCooldown(0);
       setOtp("");
       setNewPassword("");
       setConfirmPassword("");
@@ -223,29 +252,49 @@ export default function AdminPage() {
           <CardContent>
             {!otpSent ? (
               <div className="space-y-4">
-                <Button
-                  onClick={handleRequestOTP}
-                  className="w-full"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Enviar código de verificación"
-                  )}
-                </Button>
+                {adminEmailConfigured === null ? (
+                  <div className="flex justify-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : adminEmailConfigured === false ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-center text-muted-foreground">
+                      Para cambiar la contraseña primero tenés que configurar el email del administrador. Ese email recibe los códigos de verificación y las consultas del sitio.
+                    </p>
+                    <Button className="w-full" asChild>
+                      <Link href="/admin/configuracion">Ir a Configuración</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      onClick={handleRequestOTP}
+                      className="w-full"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Enviar código de verificación"
+                      )}
+                    </Button>
+                    {changePasswordMessage && (
+                      <p className="text-sm text-center text-muted-foreground">
+                        {changePasswordMessage}
+                      </p>
+                    )}
+                  </>
+                )}
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => setShowChangePassword(false)}
+                  onClick={() => {
+                    setShowChangePassword(false);
+                    setAdminEmailConfigured(null);
+                  }}
                 >
                   Cancelar
                 </Button>
-                {changePasswordMessage && (
-                  <p className="text-sm text-center text-muted-foreground">
-                    {changePasswordMessage}
-                  </p>
-                )}
               </div>
             ) : (
               <form onSubmit={handleChangePassword} className="space-y-4">
@@ -305,11 +354,23 @@ export default function AdminPage() {
                 </Button>
                 <Button
                   type="button"
+                  variant="ghost"
+                  className="w-full text-muted-foreground"
+                  disabled={resendCooldown > 0 || isSubmitting}
+                  onClick={handleRequestOTP}
+                >
+                  {resendCooldown > 0
+                    ? `Reenviar código (${resendCooldown}s)`
+                    : "Reenviar código"}
+                </Button>
+                <Button
+                  type="button"
                   variant="outline"
                   className="w-full"
                   onClick={() => {
                     setShowChangePassword(false);
                     setOtpSent(false);
+                    setResendCooldown(0);
                     setOtp("");
                     setNewPassword("");
                     setConfirmPassword("");
@@ -412,6 +473,20 @@ export default function AdminPage() {
                 <CardTitle>Agenda</CardTitle>
                 <CardDescription>
                   Gestionar horarios y reuniones agendadas
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
+          <Link href="/admin/configuracion">
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Settings className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>Configuración</CardTitle>
+                <CardDescription>
+                  Email del administrador y preferencias
                 </CardDescription>
               </CardHeader>
             </Card>

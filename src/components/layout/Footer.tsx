@@ -16,7 +16,7 @@ export function Footer() {
               alt={siteContent.fullName}
               width={140}
               height={50}
-              className="h-12 w-auto brightness-0 invert"
+              className="h-12 w-auto"
             />
             <p className="text-sm text-primary-foreground/80 leading-relaxed">
               {siteContent.footer.description}

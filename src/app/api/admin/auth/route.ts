@@ -11,6 +11,7 @@ import {
   verifyOTP,
   setAdminPassword,
 } from "@/lib/auth";
+import { getAdminEmail, getAdminEmailForSettings } from "@/lib/admin-settings";
 import { sendOTPEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
@@ -61,14 +62,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
       }
 
-      const adminEmail = process.env.ADMIN_EMAIL;
-      if (!adminEmail) {
+      const configured = await getAdminEmailForSettings();
+      if (!configured) {
         return NextResponse.json(
           { error: "Email de admin no configurado" },
           { status: 400 }
         );
       }
 
+      const adminEmail = await getAdminEmail();
       const otpCode = await createOTP(adminEmail);
 
       try {
@@ -87,14 +89,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
       }
 
-      const adminEmail = process.env.ADMIN_EMAIL;
-      if (!adminEmail) {
+      const configured = await getAdminEmailForSettings();
+      if (!configured) {
         return NextResponse.json(
           { error: "Email de admin no configurado" },
           { status: 400 }
         );
       }
 
+      const adminEmail = await getAdminEmail();
       const isValidOTP = await verifyOTP(adminEmail, otp);
       if (!isValidOTP) {
         return NextResponse.json(

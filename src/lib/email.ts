@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
+import { getAdminEmail } from "./admin-settings";
 
 const FROM_EMAIL = process.env.SMTP_USER || "contacto@estudioelige.com";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.SMTP_USER || "contacto@estudioelige.com";
 
 function getTransporter() {
   const host = process.env.SMTP_HOST;
@@ -38,12 +38,13 @@ export async function sendContactEmail(params: ContactEmailParams) {
     return;
   }
 
+  const to = await getAdminEmail();
   const { name, email, phone, preferWhatsApp, area, message } = params;
 
   try {
     await transporter.sendMail({
       from: `"ELIGE - Estudio Legal" <${FROM_EMAIL}>`,
-      to: ADMIN_EMAIL,
+      to,
       replyTo: email,
       subject: `📩 Nueva consulta de ${name}${area ? ` - ${area}` : ""}`,
       html: `
@@ -182,9 +183,10 @@ export async function sendPurchaseEmail(params: PurchaseEmailParams) {
       `,
     });
 
+    const adminTo = await getAdminEmail();
     await transporter.sendMail({
       from: `"ELIGE - Estudio Legal" <${FROM_EMAIL}>`,
-      to: ADMIN_EMAIL,
+      to: adminTo,
       subject: `💰 Nueva venta: ${workshopTitle}`,
       html: `
         <!DOCTYPE html>
@@ -396,10 +398,11 @@ export async function sendBookingNotification(params: BookingNotificationParams)
     month: "long",
   });
 
+  const to = await getAdminEmail();
   try {
     await transporter.sendMail({
       from: `"ELIGE - Estudio Legal" <${FROM_EMAIL}>`,
-      to: ADMIN_EMAIL,
+      to,
       replyTo: email,
       subject: `📅 Nueva consulta agendada - ${name} - ${formattedDate} ${time}`,
       html: `

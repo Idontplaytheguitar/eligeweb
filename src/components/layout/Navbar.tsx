@@ -63,7 +63,7 @@ export function Navbar() {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             <Image
-              src="/Logo.png"
+              src="/erasebg-transformed.png"
               alt={siteContent.fullName}
               width={140}
               height={50}
@@ -150,7 +150,7 @@ export function Navbar() {
             <div className="flex flex-col gap-6 px-5 pt-2 pb-6">
               <Link href="/" className="flex items-center gap-2 pr-10 self-start" onClick={() => setIsOpen(false)}>
                 <Image
-                  src="/Logo.png"
+                  src="/erasebg-transformed.png"
                   alt={siteContent.fullName}
                   width={140}
                   height={50}
