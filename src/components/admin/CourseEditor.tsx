@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -57,6 +57,10 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
     files: course.files ?? [],
     id: course.id,
   });
+  const draftRef = useRef(draft);
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -85,8 +89,10 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
   }, [course.content, editor]);
 
   const handleSave = () => {
-    if (editor) setDraft((d) => ({ ...d, content: editor.getHTML() }));
-    onSave({ ...draft, content: editor ? editor.getHTML() : draft.content });
+    const current = draftRef.current;
+    const finalContent = editor ? editor.getHTML() : current.content;
+    if (editor) setDraft((d) => ({ ...d, content: finalContent }));
+    onSave({ ...current, content: finalContent });
   };
 
   if (!editor) {
@@ -126,7 +132,7 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
           <label className="text-sm font-medium">Título *</label>
           <Input
             value={draft.title}
-            onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
             placeholder="Título del curso"
             className="text-lg"
           />
@@ -136,7 +142,7 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
           <label className="text-sm font-medium">Descripción corta *</label>
           <Textarea
             value={draft.description}
-            onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+            onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
             placeholder="Resumen que se ve en la lista de cursos"
             rows={2}
           />
@@ -151,7 +157,10 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
               step={1}
               value={draft.price === 0 ? "" : draft.price}
               onChange={(e) =>
-                setDraft({ ...draft, price: e.target.value === "" ? 0 : Number(e.target.value) })
+                setDraft((d) => ({
+                  ...d,
+                  price: e.target.value === "" ? 0 : Number(e.target.value),
+                }))
               }
               placeholder="ej. 5000"
             />
@@ -165,7 +174,7 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
               <input
                 type="checkbox"
                 checked={draft.published}
-                onChange={(e) => setDraft({ ...draft, published: e.target.checked })}
+                onChange={(e) => setDraft((d) => ({ ...d, published: e.target.checked }))}
                 className="rounded"
               />
               <span className="text-sm">Publicado (visible al público)</span>
@@ -180,7 +189,10 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
               uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "estudioelige"}
               onSuccess={(result: unknown) => {
                 const info = (result as { info?: { secure_url?: string } })?.info;
-                if (info?.secure_url) setDraft({ ...draft, coverImage: info.secure_url });
+                if (info?.secure_url) {
+                  const url = info.secure_url;
+                  setDraft((d) => ({ ...d, coverImage: url }));
+                }
               }}
             >
               {({ open }: { open: () => void }) => (
@@ -212,7 +224,15 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
           )}
         </div>
 
-        <CourseFilesManager files={draft.files} onChange={(files) => setDraft({ ...draft, files })} />
+        <CourseFilesManager
+          files={draft.files}
+          onChange={(updater) =>
+            setDraft((d) => ({
+              ...d,
+              files: typeof updater === "function" ? updater(d.files) : updater,
+            }))
+          }
+        />
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Contenido / temario</label>

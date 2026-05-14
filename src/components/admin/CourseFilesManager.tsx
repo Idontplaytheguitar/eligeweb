@@ -16,9 +16,11 @@ export interface CourseFileItem {
   sizeBytes?: number | null;
 }
 
+type FilesUpdater = CourseFileItem[] | ((prev: CourseFileItem[]) => CourseFileItem[]);
+
 interface Props {
   files: CourseFileItem[];
-  onChange: (files: CourseFileItem[]) => void;
+  onChange: (updater: FilesUpdater) => void;
 }
 
 export function CourseFilesManager({ files, onChange }: Props) {
@@ -26,29 +28,32 @@ export function CourseFilesManager({ files, onChange }: Props) {
   const [externalLabel, setExternalLabel] = useState("");
 
   const update = (idx: number, patch: Partial<CourseFileItem>) => {
-    const next = files.map((f, i) => (i === idx ? { ...f, ...patch } : f));
-    onChange(next);
+    onChange((prev) => prev.map((f, i) => (i === idx ? { ...f, ...patch } : f)));
   };
 
   const remove = (idx: number) => {
-    onChange(files.filter((_, i) => i !== idx));
+    onChange((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const move = (idx: number, dir: -1 | 1) => {
-    const j = idx + dir;
-    if (j < 0 || j >= files.length) return;
-    const next = [...files];
-    [next[idx], next[j]] = [next[j], next[idx]];
-    onChange(next);
+    onChange((prev) => {
+      const j = idx + dir;
+      if (j < 0 || j >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[j]] = [next[j], next[idx]];
+      return next;
+    });
   };
 
   const addExternal = () => {
-    if (!externalUrl.trim()) return;
-    onChange([
-      ...files,
+    const url = externalUrl.trim();
+    const label = externalLabel.trim();
+    if (!url) return;
+    onChange((prev) => [
+      ...prev,
       {
-        label: externalLabel.trim() || externalUrl.trim().split("/").pop() || "Enlace externo",
-        url: externalUrl.trim(),
+        label: label || url.split("/").pop() || "Enlace externo",
+        url,
         source: "external",
       },
     ]);
@@ -126,17 +131,15 @@ export function CourseFilesManager({ files, onChange }: Props) {
                 info?: { secure_url?: string; original_filename?: string; bytes?: number; format?: string };
               })?.info;
               if (info?.secure_url) {
-                onChange([
-                  ...files,
-                  {
-                    label: info.original_filename
-                      ? `${info.original_filename}${info.format ? "." + info.format : ""}`
-                      : "Archivo",
-                    url: info.secure_url,
-                    source: "cloudinary",
-                    sizeBytes: info.bytes ?? null,
-                  },
-                ]);
+                const newFile: CourseFileItem = {
+                  label: info.original_filename
+                    ? `${info.original_filename}${info.format ? "." + info.format : ""}`
+                    : "Archivo",
+                  url: info.secure_url,
+                  source: "cloudinary",
+                  sizeBytes: info.bytes ?? null,
+                };
+                onChange((prev) => [...prev, newFile]);
               }
             }}
           >
