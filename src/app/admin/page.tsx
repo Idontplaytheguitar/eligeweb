@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, LogOut, FileText, GraduationCap, Mail, Calendar, Layout, Settings } from "lucide-react";
+import { Loader2, LogOut, FileText, GraduationCap, Mail, Calendar, Layout, Settings, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -148,6 +148,20 @@ export default function AdminPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Link href="/admin/analytics">
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <BarChart3 className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>Estadísticas</CardTitle>
+                <CardDescription>
+                  Ventas, ingresos y actividad de la web
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/admin/contenido">
             <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
               <CardHeader>
@@ -230,15 +244,15 @@ export default function AdminPage() {
             </Card>
           </Link>
 
-          <Link href="/admin/cursos">
+          <Link href="/admin/talleres">
             <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <GraduationCap className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle>Cursos</CardTitle>
+                <CardTitle>Talleres</CardTitle>
                 <CardDescription>
-                  Crear y vender cursos online con MercadoPago
+                  Crear y vender talleres online con MercadoPago
                 </CardDescription>
               </CardHeader>
             </Card>

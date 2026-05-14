@@ -435,8 +435,8 @@ export default function AdminConfiguracionPage() {
               MercadoPago
             </CardTitle>
             <CardDescription>
-              Conectá tu cuenta de MercadoPago para cobrar los cursos. El dinero entra directo a tu
-              cuenta — nosotros nunca lo retenemos.
+              Conectá tu cuenta de MercadoPago para cobrar los talleres. El dinero entra directo a
+              tu cuenta — nosotros nunca lo retenemos.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

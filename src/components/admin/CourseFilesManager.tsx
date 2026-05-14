@@ -66,7 +66,7 @@ export function CourseFilesManager({ files, onChange }: Props) {
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-sm font-medium mb-1">Archivos del curso</p>
+        <p className="text-sm font-medium mb-1">Archivos del taller</p>
         <p className="text-xs text-muted-foreground">
           Material descargable que recibe el comprador (PDF, ZIP, video, etc.). Podés subir archivos
           o pegar enlaces externos (Drive, Dropbox, etc.).

@@ -113,7 +113,7 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
               Cancelar
             </Button>
             <h1 className="text-lg font-bold hidden sm:block">
-              {draft.id ? "Editar curso" : "Nuevo curso"}
+              {draft.id ? "Editar taller" : "Nuevo taller"}
             </h1>
           </div>
           <Button onClick={handleSave} disabled={isSaving} size="sm">
@@ -133,7 +133,7 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
           <Input
             value={draft.title}
             onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-            placeholder="Título del curso"
+            placeholder="Título del taller"
             className="text-lg"
           />
         </div>
@@ -143,7 +143,7 @@ export function CourseEditor({ course, onSave, onCancel, isSaving }: Props) {
           <Textarea
             value={draft.description}
             onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
-            placeholder="Resumen que se ve en la lista de cursos"
+            placeholder="Resumen que se ve en la lista de talleres"
             rows={2}
           />
         </div>

@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { WhatsAppFloatingButton } from "@/components/layout/WhatsAppFloatingButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 import { siteContent } from "@/content/site";
 import type { ServiceItem } from "@/types";
 
@@ -130,6 +131,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <WhatsAppFloatingButton />
+        <Analytics />
       </body>
     </html>
   );
