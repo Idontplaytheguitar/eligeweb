@@ -1,35 +1,24 @@
-import { redirect } from "next/navigation";
-
-// DISABLED: Talleres feature not ready for production yet
-// Redirect all workshop detail pages to main talleres page
-
-interface Props {
-  params: Promise<{ slug: string }>;
-}
-
-export default async function WorkshopPage({ params }: Props) {
-  redirect("/talleres");
-}
-
-/* DISABLED CODE - Keep for future use
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import ReactMarkdown from "react-markdown";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { BuyButton } from "@/components/talleres/BuyButton";
 
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
 async function getWorkshop(slug: string) {
   try {
-    const workshop = await prisma.workshop.findUnique({
+    return await prisma.workshop.findUnique({
       where: { slug, published: true },
+      include: { files: { orderBy: { order: "asc" }, select: { id: true, label: true } } },
     });
-    return workshop;
   } catch {
     return null;
   }
@@ -38,11 +27,7 @@ async function getWorkshop(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const workshop = await getWorkshop(slug);
-
-  if (!workshop) {
-    return { title: "Taller no encontrado" };
-  }
-
+  if (!workshop) return { title: "Taller no encontrado" };
   return {
     title: workshop.title,
     description: workshop.description,
@@ -55,19 +40,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function formatPrice(cents: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-  }).format(cents / 100);
+  return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" }).format(cents / 100);
 }
 
 export default async function WorkshopPage({ params }: Props) {
   const { slug } = await params;
   const workshop = await getWorkshop(slug);
-
-  if (!workshop) {
-    notFound();
-  }
+  if (!workshop) notFound();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background">
@@ -97,19 +76,20 @@ export default async function WorkshopPage({ params }: Props) {
               <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 {workshop.title}
               </h1>
-              <p className="text-lg text-muted-foreground mb-6">
-                {workshop.description}
-              </p>
+              <p className="text-lg text-muted-foreground mb-6">{workshop.description}</p>
             </div>
 
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="text-2xl font-bold mb-4">Contenido</h2>
-                <div className="prose prose-neutral dark:prose-invert max-w-none">
-                  <ReactMarkdown>{workshop.content}</ReactMarkdown>
-                </div>
-              </CardContent>
-            </Card>
+            {workshop.content && (
+              <Card>
+                <CardContent className="pt-6">
+                  <h2 className="text-2xl font-bold mb-4">Contenido</h2>
+                  <div
+                    className="prose prose-lg dark:prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{ __html: workshop.content }}
+                  />
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="lg:col-span-1">
@@ -124,14 +104,22 @@ export default async function WorkshopPage({ params }: Props) {
 
                 <BuyButton workshopId={workshop.id} workshopTitle={workshop.title} />
 
-                <div className="pt-4 border-t">
-                  <h3 className="font-semibold mb-2">Incluye:</h3>
-                  <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>✓ Acceso inmediato al material</li>
-                    <li>✓ Material descargable en PDF</li>
-                    <li>✓ Contenido actualizado</li>
-                    {workshop.materialUrl && <li>✓ Recursos adicionales</li>}
-                  </ul>
+                {workshop.files.length > 0 && (
+                  <div className="pt-4 border-t">
+                    <h3 className="font-semibold mb-2 text-sm">Incluye:</h3>
+                    <ul className="text-sm text-muted-foreground space-y-1.5">
+                      {workshop.files.map((f) => (
+                        <li key={f.id} className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{f.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t text-xs text-muted-foreground">
+                  Tras el pago recibirás un email con el link de descarga (válido por 7 días).
                 </div>
               </CardContent>
             </Card>
@@ -141,4 +129,3 @@ export default async function WorkshopPage({ params }: Props) {
     </div>
   );
 }
-*/

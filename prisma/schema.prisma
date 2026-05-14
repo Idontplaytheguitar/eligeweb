@@ -30,6 +30,16 @@ model AdminConfig {
   contactAutoReplyText   String?  @db.Text
   absenceNoticeEnabled   Boolean  @default(false)
   absenceNoticeText      String?  @db.Text
+  // MercadoPago OAuth (single seller — la dueña)
+  mpUserId               String?
+  mpAccessToken          String?  @db.Text
+  mpRefreshToken         String?  @db.Text
+  mpPublicKey            String?
+  mpTokenExpiresAt       DateTime?
+  mpConnectedAt          DateTime?
+  mpAccountEmail         String?
+  mpAccountNickname      String?
+  mpLiveMode             Boolean  @default(true)
 }
 
 model AdminLoginAttempt {
@@ -62,18 +72,34 @@ model BlogPost {
 }
 
 model Workshop {
-  id          String     @id @default(cuid())
+  id          String       @id @default(cuid())
   title       String
-  slug        String     @unique
+  slug        String       @unique
   description String
   content     String
   price       Int
   coverImage  String?
-  materialUrl String?
-  published   Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  materialUrl String?      // deprecated — kept for backward compat
+  published   Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   purchases   Purchase[]
+  files       CourseFile[]
+}
+
+model CourseFile {
+  id         String   @id @default(cuid())
+  workshopId String
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  label      String
+  url        String   @db.Text
+  source     String   // "cloudinary" | "external"
+  mimeType   String?
+  sizeBytes  Int?
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([workshopId])
 }
 
 model Purchase {

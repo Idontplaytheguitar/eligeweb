@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// DISABLED: Mercadopago checkout not ready for production yet
-export async function POST(request: NextRequest) {
-  return NextResponse.json(
-    { error: "Los talleres no están disponibles en este momento. Próximamente." },
-    { status: 503 }
-  );
-}
-
-/* DISABLED CODE - Keep for future use
 import { prisma } from "@/lib/prisma";
-import { createPreference } from "@/lib/mercadopago";
+import { createPreference, MercadoPagoNotConnectedError } from "@/lib/mercadopago";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,21 +8,15 @@ export async function POST(request: NextRequest) {
     const { workshopId, email, name } = body;
 
     if (!workshopId) {
-      return NextResponse.json(
-        { error: "ID de taller requerido" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "ID de taller requerido" }, { status: 400 });
     }
 
     const workshop = await prisma.workshop.findUnique({
-      where: { id: workshopId, published: true },
+      where: { id: workshopId },
     });
 
-    if (!workshop) {
-      return NextResponse.json(
-        { error: "Taller no encontrado" },
-        { status: 404 }
-      );
+    if (!workshop || !workshop.published) {
+      return NextResponse.json({ error: "Taller no encontrado" }, { status: 404 });
     }
 
     const preferenceData = await createPreference({
@@ -48,11 +32,10 @@ export async function POST(request: NextRequest) {
       init_point: preferenceData.init_point,
     });
   } catch (error) {
+    if (error instanceof MercadoPagoNotConnectedError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
     console.error("Checkout error:", error);
-    return NextResponse.json(
-      { error: "Error al crear el pago" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al crear el pago" }, { status: 500 });
   }
 }
-*/

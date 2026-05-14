@@ -230,18 +230,19 @@ export default function AdminPage() {
             </Card>
           </Link>
 
-          {/* DISABLED: Talleres not ready for production yet — al final, gris, ruta no accesible */}
-          <Card className="h-full opacity-50 cursor-not-allowed">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mb-4">
-                <GraduationCap className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <CardTitle className="text-muted-foreground">Talleres</CardTitle>
-              <CardDescription>
-                Próximamente disponible
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <Link href="/admin/cursos">
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <GraduationCap className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>Cursos</CardTitle>
+                <CardDescription>
+                  Crear y vender cursos online con MercadoPago
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
       </div>
     </div>

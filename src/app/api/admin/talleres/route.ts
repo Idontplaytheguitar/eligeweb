@@ -6,11 +6,41 @@ function generateSlug(title: string): string {
   return title
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .trim();
+}
+
+interface IncomingFile {
+  label?: string;
+  url?: string;
+  source?: string;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+}
+
+function normalizeFiles(files: unknown): {
+  label: string;
+  url: string;
+  source: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  order: number;
+}[] {
+  if (!Array.isArray(files)) return [];
+  return files
+    .map((f, i) => f as IncomingFile)
+    .filter((f): f is IncomingFile => !!f && typeof f.url === "string" && f.url.length > 0)
+    .map((f, i) => ({
+      label: (f.label && f.label.trim()) || `Archivo ${i + 1}`,
+      url: f.url as string,
+      source: f.source === "external" ? "external" : "cloudinary",
+      mimeType: f.mimeType ?? null,
+      sizeBytes: typeof f.sizeBytes === "number" ? f.sizeBytes : null,
+      order: i,
+    }));
 }
 
 export async function GET() {
@@ -18,9 +48,8 @@ export async function GET() {
     const workshops = await prisma.workshop.findMany({
       orderBy: { createdAt: "desc" },
       include: {
-        _count: {
-          select: { purchases: true },
-        },
+        files: { orderBy: { order: "asc" } },
+        _count: { select: { purchases: true } },
       },
     });
     return NextResponse.json(workshops);
@@ -38,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, content, price, coverImage, materialUrl, published } = body;
+    const { title, description, content, price, coverImage, materialUrl, published, files } = body;
 
     if (!title || !description || !content || price === undefined) {
       return NextResponse.json(
@@ -53,17 +82,25 @@ export async function POST(request: NextRequest) {
       slug = `${slug}-${Date.now()}`;
     }
 
+    const normalizedFiles = normalizeFiles(files);
+
     const workshop = await prisma.workshop.create({
       data: {
         slug,
         title,
         description,
         content,
-        price: Math.round(price * 100),
+        price: Math.round(Number(price) * 100),
         coverImage: coverImage || null,
         materialUrl: materialUrl || null,
         published: published || false,
+        files: normalizedFiles.length
+          ? {
+              create: normalizedFiles,
+            }
+          : undefined,
       },
+      include: { files: { orderBy: { order: "asc" } } },
     });
 
     return NextResponse.json(workshop);
@@ -81,7 +118,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, title, description, content, price, coverImage, materialUrl, published } = body;
+    const { id, title, description, content, price, coverImage, materialUrl, published, files } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
@@ -96,14 +133,33 @@ export async function PUT(request: NextRequest) {
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     if (content !== undefined) updateData.content = content;
-    if (price !== undefined) updateData.price = Math.round(price * 100);
+    if (price !== undefined) updateData.price = Math.round(Number(price) * 100);
     if (coverImage !== undefined) updateData.coverImage = coverImage;
     if (materialUrl !== undefined) updateData.materialUrl = materialUrl;
     if (published !== undefined) updateData.published = published;
 
-    const workshop = await prisma.workshop.update({
+    // If files array is provided, replace the file set entirely.
+    if (Array.isArray(files)) {
+      const normalizedFiles = normalizeFiles(files);
+      await prisma.$transaction([
+        prisma.courseFile.deleteMany({ where: { workshopId: id } }),
+        prisma.workshop.update({
+          where: { id },
+          data: {
+            ...updateData,
+            files: normalizedFiles.length
+              ? { create: normalizedFiles }
+              : undefined,
+          },
+        }),
+      ]);
+    } else if (Object.keys(updateData).length > 0) {
+      await prisma.workshop.update({ where: { id }, data: updateData });
+    }
+
+    const workshop = await prisma.workshop.findUnique({
       where: { id },
-      data: updateData,
+      include: { files: { orderBy: { order: "asc" } } },
     });
 
     return NextResponse.json(workshop);

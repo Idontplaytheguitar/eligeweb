@@ -13,6 +13,9 @@ import {
   MessageCircle,
   Send,
   AlertCircle,
+  CreditCard,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +63,57 @@ export default function AdminConfiguracionPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changePasswordMessage, setChangePasswordMessage] = useState("");
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+
+  // MercadoPago
+  const [mp, setMp] = useState<{
+    connected: boolean;
+    accountEmail?: string | null;
+    accountNickname?: string | null;
+    connectedAt?: string | null;
+    liveMode?: boolean;
+  } | null>(null);
+  const [mpBusy, setMpBusy] = useState(false);
+
+  const fetchMpStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/mercadopago/connection");
+      if (res.ok) setMp(await res.json());
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMpStatus();
+    // detectar callback de OAuth y notificar
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("mp_ok") === "1") {
+        toast.success("MercadoPago conectado");
+        window.history.replaceState({}, "", "/admin/configuracion#mercadopago");
+      } else if (params.get("mp_error")) {
+        toast.error("No se pudo conectar MercadoPago: " + params.get("mp_error"));
+        window.history.replaceState({}, "", "/admin/configuracion#mercadopago");
+      }
+    }
+  }, [fetchMpStatus]);
+
+  const handleMpDisconnect = async () => {
+    if (!confirm("¿Desconectar tu cuenta de MercadoPago? Los cobros dejarán de funcionar hasta reconectarla.")) return;
+    setMpBusy(true);
+    try {
+      const res = await fetch("/api/mercadopago/oauth/disconnect", { method: "POST" });
+      if (res.ok) {
+        toast.success("MercadoPago desconectado");
+        await fetchMpStatus();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Error al desconectar");
+      }
+    } finally {
+      setMpBusy(false);
+    }
+  };
 
   const checkAuthAndFetch = useCallback(async () => {
     try {
@@ -357,6 +411,79 @@ export default function AdminConfiguracionPage() {
                 </form>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* MercadoPago */}
+        <Card id="mercadopago">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              MercadoPago
+            </CardTitle>
+            <CardDescription>
+              Conectá tu cuenta de MercadoPago para cobrar los cursos. El dinero entra directo a tu
+              cuenta — nosotros nunca lo retenemos.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {mp === null ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : mp.connected ? (
+              <div className="space-y-3">
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                  <div className="flex-1 text-sm">
+                    <p className="font-medium text-green-900 dark:text-green-200">
+                      Cuenta conectada
+                      {mp.liveMode === false && (
+                        <span className="ml-2 text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded">
+                          modo sandbox
+                        </span>
+                      )}
+                    </p>
+                    {(mp.accountEmail || mp.accountNickname) && (
+                      <p className="text-green-800 dark:text-green-300">
+                        {mp.accountNickname ?? mp.accountEmail}
+                      </p>
+                    )}
+                    {mp.connectedAt && (
+                      <p className="text-xs text-green-700/80 dark:text-green-400/80">
+                        Conectada el{" "}
+                        {new Date(mp.connectedAt).toLocaleDateString("es-AR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMpDisconnect}
+                  disabled={mpBusy}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Desconectar MercadoPago
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Al conectar, vas a ser redirigida a MercadoPago para autorizar la conexión con tu
+                  cuenta.
+                </p>
+                <Button asChild>
+                  <a href="/api/mercadopago/oauth/start">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Conectar MercadoPago
+                  </a>
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 

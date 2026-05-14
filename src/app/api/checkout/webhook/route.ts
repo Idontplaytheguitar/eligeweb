@@ -1,37 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
-
-// DISABLED: Mercadopago webhook not ready for production yet
-export async function POST(request: NextRequest) {
-  return NextResponse.json(
-    { error: "Webhook not available" },
-    { status: 503 }
-  );
-}
-
-/* DISABLED CODE - Keep for future use
 import crypto from "crypto";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getPayment } from "@/lib/mercadopago";
 import { sendPurchaseEmail } from "@/lib/email";
 
-export async function POST_DISABLED(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
 
-    if (body.type !== "payment") {
+    // MP sends multiple notification types; only act on "payment".
+    const type = body?.type || body?.topic;
+    if (type !== "payment") {
       return NextResponse.json({ received: true });
     }
 
-    const paymentId = body.data?.id;
-
+    const paymentId = body?.data?.id || body?.resource?.split("/")?.pop();
     if (!paymentId) {
       return NextResponse.json({ error: "No payment ID" }, { status: 400 });
     }
 
-    const paymentData = await getPayment(paymentId.toString());
+    const paymentData = await getPayment(String(paymentId));
 
     if (paymentData.status !== "approved") {
-      return NextResponse.json({ received: true });
+      return NextResponse.json({ received: true, status: paymentData.status });
     }
 
     const workshopId = paymentData.external_reference;
@@ -45,7 +36,7 @@ export async function POST_DISABLED(request: NextRequest) {
     }
 
     const existingPurchase = await prisma.purchase.findUnique({
-      where: { paymentId: paymentId.toString() },
+      where: { paymentId: String(paymentId) },
     });
 
     if (existingPurchase) {
@@ -60,7 +51,7 @@ export async function POST_DISABLED(request: NextRequest) {
         workshopId,
         email: payerEmail,
         name: payerName,
-        paymentId: paymentId.toString(),
+        paymentId: String(paymentId),
         paymentStatus: paymentData.status,
         downloadToken,
         downloadExpires,
@@ -85,10 +76,6 @@ export async function POST_DISABLED(request: NextRequest) {
     return NextResponse.json({ received: true, purchaseId: purchase.id });
   } catch (error) {
     console.error("Webhook error:", error);
-    return NextResponse.json(
-      { error: "Error processing webhook" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error processing webhook" }, { status: 500 });
   }
 }
-*/
