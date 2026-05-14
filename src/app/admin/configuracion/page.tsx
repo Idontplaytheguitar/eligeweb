@@ -72,14 +72,27 @@ export default function AdminConfiguracionPage() {
     connectedAt?: string | null;
     liveMode?: boolean;
   } | null>(null);
+  const [mpError, setMpError] = useState<string>("");
+  const [mpLoaded, setMpLoaded] = useState(false);
   const [mpBusy, setMpBusy] = useState(false);
 
   const fetchMpStatus = useCallback(async () => {
+    setMpError("");
     try {
       const res = await fetch("/api/mercadopago/connection");
-      if (res.ok) setMp(await res.json());
-    } catch {
-      // ignore
+      if (res.ok) {
+        setMp(await res.json());
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setMpError(
+          data?.error ||
+            `No se pudo consultar el estado (HTTP ${res.status}). ¿La migración de DB está aplicada?`
+        );
+      }
+    } catch (e) {
+      setMpError("Error de conexión al consultar el estado de MercadoPago.");
+    } finally {
+      setMpLoaded(true);
     }
   }, []);
 
@@ -427,9 +440,13 @@ export default function AdminConfiguracionPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {mp === null ? (
+            {!mpLoaded ? (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-            ) : mp.connected ? (
+            ) : mpError ? (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-sm text-destructive">
+                {mpError}
+              </div>
+            ) : mp?.connected ? (
               <div className="space-y-3">
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
                   <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
