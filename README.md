@@ -2,6 +2,8 @@
 
 Sitio web profesional para el estudio jurídico ELIGE, desarrollado con Next.js 14, TypeScript, Tailwind CSS y shadcn/ui.
 
+**Live:** [estudioelige.com](https://estudioelige.com) · **GitHub:** [Idontplaytheguitar/eligeweb](https://github.com/Idontplaytheguitar/eligeweb)
+
 ## Requisitos
 
 - Node.js 18.17 o superior
